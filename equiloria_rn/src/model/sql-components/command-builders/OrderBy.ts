@@ -3,7 +3,7 @@ export default interface OrderBy {
     direction: Direction
 }
 
-export enum Direction{
-    ASC
-    , DSC
+export enum Direction {
+    ASC = "ASC"
+    , DSC = "DSC"
 }

@@ -1,9 +1,8 @@
-
-enum ColumnType {
-    INTEGER
-    , TEXT
-    , REAL
-    , BLOB
+export enum ColumnType {
+    INTEGER = "INTEGER"
+    , TEXT = "TEXT"
+    , REAL = "REAL"
+    , BLOB = "BLOB"
 }
 
 interface ColumnDefinition {

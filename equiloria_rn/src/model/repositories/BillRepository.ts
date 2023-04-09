@@ -5,6 +5,7 @@ import {InsertInto} from "../sql-components/command-builders/dml/InsertInto";
 import CommandExecutor from "../sql-components/command-executors/CommandExecutor";
 import AlterTable from "../sql-components/command-builders/ddl/AlterTable";
 import {ActivityConstant} from "./ActivityRepository";
+import {ColumnType} from "../sql-components/command-builders/ddl/ColumnDefinition";
 
 module BillConstant {
     export const TABLE_NAME: string = 't_bills';

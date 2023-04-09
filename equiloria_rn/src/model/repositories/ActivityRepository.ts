@@ -4,6 +4,7 @@ import CommandExecutor from "../sql-components/command-executors/CommandExecutor
 import CreateTable from "../sql-components/command-builders/ddl/CreateTable";
 import {InsertInto} from "../sql-components/command-builders/dml/InsertInto";
 import {BillRepository} from "./BillRepository";
+import {ColumnType} from "../sql-components/command-builders/ddl/ColumnDefinition";
 
 
 export module ActivityConstant {

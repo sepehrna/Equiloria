@@ -39,15 +39,15 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         }
     }
 
-    private async executeTransactionalCommand(
-        commandBuilder: DmlBuilder
-    ): Promise<any> {
+    private async executeTransactionalCommand(commandBuilder: DmlBuilder): Promise<any> {
         const db = this.open();
         return new Promise((resolve, reject) => {
             db.transaction(
                 (tx) => {
+                    let sqlStatement = commandBuilder.build();
+                    console.info(sqlStatement)
                     tx.executeSql(
-                        commandBuilder.build(),
+                        sqlStatement,
                         [],
                         (_, resultSet) => resolve(resultSet),
                         (_, error) => {
@@ -61,15 +61,15 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         });
     }
 
-    private async executeNonTransactionalCommand(
-        commandBuilder: DdlBuilder | DqlBuilder
-    ): Promise<any> {
+    private async executeNonTransactionalCommand(commandBuilder: DdlBuilder | DqlBuilder): Promise<any> {
         const db = this.open();
         return new Promise((resolve, reject) => {
             db.transaction(
                 (tx) => {
+                    let sqlStatement = commandBuilder.build();
+                    console.info(sqlStatement)
                     tx.executeSql(
-                        commandBuilder.build(),
+                        sqlStatement,
                         [],
                         (_, resultSet) => resolve(resultSet),
                         (_, error) => {
