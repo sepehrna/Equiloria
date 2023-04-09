@@ -1,22 +1,43 @@
-import { StatusBar } from 'expo-status-bar';
+// App.tsx
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import {SafeAreaView, StyleSheet, Text, TouchableOpacity} from 'react-native';
+import {insertMockData} from './src/test/MockGeneratorFunctions';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <Text>Would it be ok?</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+const App = () => {
+    const handlePress = async () => {
+        try {
+            await insertMockData();
+            console.log('Mock data inserted successfully.');
+        } catch (error) {
+            console.error('Error inserting mock data:', error);
+        }
+    };
+
+    return (
+        <SafeAreaView style={styles.container}>
+            <TouchableOpacity style={styles.button}>
+                <Text style={styles.buttonText}>Insert Mock Data</Text>
+            </TouchableOpacity>
+        </SafeAreaView>
+    );
+};
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    button: {
+        backgroundColor: '#007AFF',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: '#FFF',
+        fontSize: 18,
+    },
 });
+
+export default App;
