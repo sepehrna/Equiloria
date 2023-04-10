@@ -1,13 +1,17 @@
 import SqliteInMemoryCommandExecutor from "../model/sql-components/command-executors/SqliteInMemoryCommandExecutor";
-import {ActivityBuilder} from "../model/entities/Activity";
+import {Activity, ActivityBuilder} from "../model/entities/Activity";
 import {BillBuilder} from "../model/entities/Bill";
 import {ActivityRepository} from "../model/repositories/ActivityRepository";
 import {BillRepository} from "../model/repositories/BillRepository";
 
 export async function initializeDatabase() {
-    const executor = new SqliteInMemoryCommandExecutor();
+    const executor = SqliteInMemoryCommandExecutor.getInstance();
     const billRepo = new BillRepository(executor);
     const activityRepo = new ActivityRepository(executor, billRepo);
+
+    // Drop previous tables
+    await activityRepo.dropTable();
+    await billRepo.dropTable();
 
     // Create activities table
     await activityRepo.createTable();
@@ -42,4 +46,11 @@ export async function initializeDatabase() {
     await activityRepo.insert(activity1);
     await activityRepo.insert(activity2);
     await activityRepo.insert(activity3);
+
+    let activities: Activity[] = await activityRepo.findAll();
+    let last: Activity = activities.pop() as Activity;
+    console.info(activities);
+    let activity: Activity | null = await activityRepo.findById(last.activityId);
+    console.info(activity);
+
 }

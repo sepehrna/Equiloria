@@ -1,9 +1,9 @@
 export default interface OrderBy {
-    column: string
-    direction: Direction
+    column: string;
+    direction: Direction;
 }
 
 export enum Direction {
-    ASC = "ASC"
-    , DSC = "DSC"
+    ASC = 'ASC'
+    , DESC = 'DESC'
 }

@@ -2,8 +2,8 @@ import DmlBuilder from "./DmlBuilder";
 
 export default class UpdateTable extends DmlBuilder {
 
-    build(): string {
-        const set = Object.keys(this.values).map(column => `${column} = ?`).join(', ')
-        return `UPDATE ${this._tableName} SET ${set} ${this.buildWhere()};`
+    public build(): string {
+        const setClause = this.columns.map(element => `${element.column} = ${element.value} `).join(', ')
+        return `UPDATE ${this._tableName} SET ${setClause} ${this.buildWhere()};`
     }
 }

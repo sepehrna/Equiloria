@@ -1,16 +1,30 @@
-import SqliteInMemoryCommandExecutor from "../sql-components/command-executors/SqliteInMemoryCommandExecutor";
-import CommandBuilder from "../sql-components/command-builders/CommandBuilder";
 import {Entity} from "../entities/Entity";
 import CommandExecutor from "../sql-components/command-executors/CommandExecutor";
+import DmlBuilder from "../sql-components/command-builders/dml/DmlBuilder";
+import DdlBuilder from "../sql-components/command-builders/ddl/DdlBuilder";
+import {DqlBuilder} from "../sql-components/command-builders/dql/DqlBuilder";
+import CommandAggregator from "./aggregators/CommandAggregator";
 
 export abstract class BaseRepository<T extends Entity> {
-    protected executor: CommandExecutor;
+    private executor: CommandExecutor;
 
     protected constructor(executor: CommandExecutor) {
         this.executor = executor;
     }
 
-    protected async executeCommand(commandBuilder: CommandBuilder): Promise<any> {
-        return await this.executor.execute(commandBuilder);
+    protected async executeDmlCommand(commandBuilder: DmlBuilder): Promise<any> {
+        return await this.executor.executeTransactionalCommand([commandBuilder]);
+    }
+
+    protected async executeDmlCommandsWithAggregator(commandAggregator: CommandAggregator<DmlBuilder>): Promise<any> {
+        return await this.executor.executeTransactionalCommand(commandAggregator.aggregate());
+    }
+
+    protected async executeDdlCommand(commandBuilder: DdlBuilder): Promise<any> {
+        return await this.executor.executeTransactionalCommand([commandBuilder]);
+    }
+
+    protected async executeDqlCommand<E extends Entity>(commandBuilder: DqlBuilder<E>): Promise<E[]> {
+        return await this.executor.executeNonTransactionalCommand(commandBuilder);
     }
 }

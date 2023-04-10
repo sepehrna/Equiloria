@@ -1,10 +1,13 @@
-// SqliteInMemoryCommandExecutor.ts
 import * as SQLite from "expo-sqlite";
 import CommandExecutor from "./CommandExecutor";
 import {DqlBuilder} from "../command-builders/dql/DqlBuilder";
 import DmlBuilder from "../command-builders/dml/DmlBuilder";
 import DdlBuilder from "../command-builders/ddl/DdlBuilder";
 import CommandBuilder from "../command-builders/CommandBuilder";
+import {Entity} from "../../entities/Entity";
+import {SQLResultSet} from "expo-sqlite";
+import {plainToInstance} from "class-transformer";
+import {ClassConstructor} from "class-transformer/types/interfaces";
 
 export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
     private static instance: SqliteInMemoryCommandExecutor;
@@ -28,10 +31,12 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
     public async execute(commandBuilder: CommandBuilder): Promise<any> {
         try {
             if (commandBuilder instanceof DmlBuilder) {
-                await this.executeTransactionalCommand(commandBuilder);
-            } else if (commandBuilder instanceof DqlBuilder) {
-                await this.executeNonTransactionalCommand(commandBuilder);
+                let commandBuilders: DmlBuilder[] = [commandBuilder];
+                await this.executeTransactionalCommand(commandBuilders);
             } else if (commandBuilder instanceof DdlBuilder) {
+                let commandBuilders: DdlBuilder[] = [commandBuilder];
+                await this.executeTransactionalCommand(commandBuilders);
+            } else if (commandBuilder instanceof DqlBuilder) {
                 await this.executeNonTransactionalCommand(commandBuilder);
             }
         } catch (error) {
@@ -39,47 +44,66 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         }
     }
 
-    private async executeTransactionalCommand(commandBuilder: DmlBuilder): Promise<any> {
+    public async executeNonTransactionalCommand<E extends Entity>(commandBuilder: DqlBuilder<E>): Promise<E[]> {
         const db = this.open();
         return new Promise((resolve, reject) => {
-            db.transaction(
+            db.readTransaction(
                 (tx) => {
                     let sqlStatement = commandBuilder.build();
-                    console.info(sqlStatement)
+                    console.debug(sqlStatement)
                     tx.executeSql(
-                        sqlStatement,
-                        [],
-                        (_, resultSet) => resolve(resultSet),
-                        (_, error) => {
+                        sqlStatement
+                        , []
+                        , (_, resultSet) => {
+                            let eConstructor: ClassConstructor<E> = commandBuilder.entityInstance.constructor as ClassConstructor<E>;
+                            let activities = this.resultSetToObjects(resultSet, eConstructor);
+                            resolve(activities);
+                        }
+                        , (_, error) => {
                             reject(error);
                             return true;
                         }
                     );
-                },
-                (error) => reject(error)
+                }
+                , (error) => reject(error)
             );
         });
     }
 
-    private async executeNonTransactionalCommand(commandBuilder: DdlBuilder | DqlBuilder): Promise<any> {
+    public async executeTransactionalCommand(commandBuilders: DmlBuilder[] | DdlBuilder[]): Promise<any> {
         const db = this.open();
         return new Promise((resolve, reject) => {
             db.transaction(
                 (tx) => {
-                    let sqlStatement = commandBuilder.build();
-                    console.info(sqlStatement)
-                    tx.executeSql(
-                        sqlStatement,
-                        [],
-                        (_, resultSet) => resolve(resultSet),
-                        (_, error) => {
-                            reject(error);
-                            return true;
+                    commandBuilders.forEach(commandBuilder => {
+                            let sqlStatement = commandBuilder.build();
+                            console.debug(sqlStatement);
+                            tx.executeSql(
+                                sqlStatement
+                                , []
+                                , (_, resultSet) => resolve(resultSet), (_, error) => {
+                                    reject(error);
+                                    return false;
+                                }
+                            )
                         }
                     );
-                },
-                (error) => reject(error)
+                }
+                , (error) => reject(error)
             );
         });
+    }
+
+    private resultSetToObjects<T>(resultSet: SQLResultSet, objectType: new () => T): T[] {
+        const rows = resultSet.rows;
+        const objects: T[] = [];
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows.item(i);
+            const object: T = plainToInstance(objectType, row);
+            objects.push(object);
+        }
+
+        return objects;
     }
 }

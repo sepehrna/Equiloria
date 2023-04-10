@@ -1,4 +1,5 @@
 import DdlBuilder from "./DdlBuilder";
+import {ColumnDefinition, ColumnType} from "./ColumnDefinition";
 
 export default class AlterTable extends DdlBuilder {
 

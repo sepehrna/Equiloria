@@ -3,7 +3,7 @@ import Condition from "./Condition";
 export default class BuilderUtils {
 
     public static createFieldsString(fields: string | string[]) {
-        return  Array.isArray(fields) ? fields.join(', ') : fields;
+        return Array.isArray(fields) ? fields.join(', ') : fields;
     }
 
     public static buildWhereClause(conditions: Condition[]): string {
@@ -12,7 +12,7 @@ export default class BuilderUtils {
             where = 'WHERE ';
             for (let i = 0; i < conditions.length; i++) {
                 const condition = conditions[i];
-                where += `${condition.column} = ?`;
+                where += `${condition.column} = ${condition.value}`;
                 if (i < conditions.length - 1) {
                     where += ' AND '
                 }

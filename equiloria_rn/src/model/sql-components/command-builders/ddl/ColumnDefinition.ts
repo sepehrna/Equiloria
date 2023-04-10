@@ -1,11 +1,7 @@
-export enum ColumnType {
-    INTEGER = "INTEGER"
-    , TEXT = "TEXT"
-    , REAL = "REAL"
-    , BLOB = "BLOB"
-}
+import {ColumnType} from "../ColumnType";
 
-interface ColumnDefinition {
+
+export interface ColumnDefinition {
     name: string;
     type: ColumnType;
     primaryKey?: boolean;

@@ -1,4 +1,5 @@
 import DdlBuilder from "./DdlBuilder";
+import {ColumnDefinition, ColumnType} from "./ColumnDefinition";
 
 export default class CreateTable extends DdlBuilder {
 
@@ -54,8 +55,8 @@ export default class CreateTable extends DdlBuilder {
         return this;
     }
 
-    build(): string {
-        let sql = `CREATE TABLE ${this._tableName} (\n`;
+    public build(): string {
+        let sql = `CREATE TABLE IF NOT EXISTS ${this._tableName} (\n`;
 
         for (let i = 0; i < this.columns.length; i++) {
             const column = this.columns[i];

@@ -4,11 +4,11 @@ export default class DropTable extends DdlBuilder {
 
     public tableName(tableName: string): DropTable {
         this._tableName = tableName;
-        return this
+        return this;
     }
 
-    build(): string {
-        return `DROP TABLE IF EXISTS ${this.tableName}`
+    public build(): string {
+        return `DROP TABLE IF EXISTS ${this._tableName}`;
     }
 
 }

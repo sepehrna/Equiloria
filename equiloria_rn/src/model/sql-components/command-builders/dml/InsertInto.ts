@@ -1,15 +1,19 @@
 import DmlBuilder from "./DmlBuilder";
 
-export class InsertInto extends DmlBuilder{
+export class InsertInto extends DmlBuilder {
 
-    protected value(column: string, value: any): DmlBuilder {
-        return super.value(column, value);
+    column(column: string, value: any): DmlBuilder {
+        return super.column(column, value);
     }
 
-    build(): string {
-        const columns = Object.keys(this.values).join(', ');
-        const placeholders = Object.keys(this.values).map(() => '?').join(', ');
-        return `INSERT INTO ${this._tableName} (${columns})+' VALUES '+(${placeholders});`;
+    public build(): string {
+        const columnNames = this.columns
+            .map(element => `'${element.column}' `)
+            .join(', ');
+        const columnValues = this.columns
+            .map(element => `'${element.value}' `)
+            .join(', ');
+        return `INSERT INTO ${this._tableName} (${columnNames}) VALUES (${columnValues});`;
     }
 
 }

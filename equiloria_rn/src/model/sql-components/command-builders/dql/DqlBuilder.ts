@@ -2,55 +2,57 @@ import CommandBuilder from "../CommandBuilder";
 import Condition from "../Condition";
 import BuilderUtils from "../BuilderUtils";
 import OrderBy, {Direction} from "../OrderBy";
+import {Entity} from "../../../entities/Entity";
 
-export class DqlBuilder implements CommandBuilder {
+export class DqlBuilder<E extends Entity> implements CommandBuilder {
     private query: string;
-    private tableName: string
-    private readonly fields: string[]
-    private readonly conditions: Condition[]
-    private readonly orderByArray: OrderBy[]
-    private limitNumber: number
-    private offsetNumber: number
+    private tableName: string;
+    private fields: string[];
+    private readonly conditions: Condition[];
+    private readonly orderByArray: OrderBy[];
+    private limitNumber: number;
+    private offsetNumber: number;
+    private readonly _entityInstance: E;
 
-    constructor() {
-        this.query = ''
-        this.tableName = ''
-        this.fields = []
-        this.conditions = []
-        this.orderByArray = []
+    constructor(entityInstance: E) {
+        this.query = '';
+        this.tableName = '';
+        this.fields = [];
+        this.conditions = [];
+        this.orderByArray = [];
         this.limitNumber = -1;
         this.offsetNumber = -1;
+        this._entityInstance = entityInstance;
     }
 
-    select(fields: string | string[]): DqlBuilder {
-        let neededFields: string[] = Array.isArray(fields) ? fields : [fields]
-        this.fields.concat(neededFields)
+    select(fields: string | string[]): DqlBuilder<E> {
+        let neededFields: string[] = Array.isArray(fields) ? fields : [fields];
+        this.fields = this.fields.concat(neededFields);
         return this;
     }
 
 
-    from(tableName: string): DqlBuilder {
+    from(tableName: string): DqlBuilder<E> {
         this.tableName = tableName
         return this;
     }
 
-    where(column: string, value: any): DqlBuilder {
+    where(column: string, value: any): DqlBuilder<E> {
         this.conditions.push({column, value})
         return this;
     }
 
-    orderBy(column: string, direction: Direction): DqlBuilder {
+    orderBy(column: string, direction: Direction): DqlBuilder<E> {
         this.orderByArray.push({column, direction})
-        this.query += `ORDER BY ${column} ${direction} `
         return this;
     }
 
-    limit(limit: number): DqlBuilder {
+    limit(limit: number): DqlBuilder<E> {
         this.limitNumber = limit
         return this
     }
 
-    offset(offset: number): DqlBuilder {
+    offset(offset: number): DqlBuilder<E> {
         this.offsetNumber = offset
         return this;
     }
@@ -70,7 +72,12 @@ export class DqlBuilder implements CommandBuilder {
         this.query += orderBy
     }
 
-    build(): string {
+
+    get entityInstance(): E {
+        return this._entityInstance;
+    }
+
+    public build(): string {
         this.buildSelectClause();
         this.query += BuilderUtils.buildWhereClause(this.conditions)
         this.buildOrderByClause()
@@ -80,19 +87,23 @@ export class DqlBuilder implements CommandBuilder {
     }
 
     private buildOffsetClause() {
-        this.query += `OFFSET ${this.offsetNumber} `
+        if (this.offsetNumber > -1) {
+            this.query += ` OFFSET ${this.offsetNumber} `;
+        }
     }
 
     private buildLimitClause() {
-        this.query += `LIMIT ${this.limitNumber} `
+        if (this.limitNumber > -1) {
+            this.query += ` LIMIT ${this.limitNumber} `;
+        }
     }
 
     private buildSelectClause() {
-        let fieldsString = '*'
-        if(this.fields) {
+        let fieldsString = '*';
+        if (this.fields) {
             fieldsString = BuilderUtils.createFieldsString(this.fields);
         }
-        this.query += `SELECT ${fieldsString} `
-        this.query += `FROM ${this.tableName} `
+        this.query += `SELECT ${fieldsString} `;
+        this.query += `FROM ${this.tableName} `;
     }
 }

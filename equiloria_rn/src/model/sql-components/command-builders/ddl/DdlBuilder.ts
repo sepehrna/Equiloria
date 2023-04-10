@@ -2,11 +2,11 @@ import CommandBuilder from "../CommandBuilder";
 
 export default abstract class DdlBuilder implements CommandBuilder {
 
-    protected _tableName: string
+    protected _tableName: string;
 
     constructor() {
-        this._tableName = ''
+        this._tableName = '';
     }
 
-    abstract build(): string
+    public abstract build(): string;
 }
