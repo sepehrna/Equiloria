@@ -1,60 +1,64 @@
-// App.tsx
-import React, { useEffect } from 'react';
-import {
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    ViewStyle,
-    TextStyle,
-} from 'react-native';
-import { initializeDatabase } from './src/test/MockGeneratorFunctions';
+import React, {useCallback, useEffect, useState} from 'react';
+import * as SplashScreen from 'expo-splash-screen';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import Main from "./src/view/screens/Main";
+import {StyleSheet, View} from "react-native";
 
-const App: React.FC = () => {
-    const handlePress = () => {
-        insertData();
-    };
+const stackNavigator = createStackNavigator();
+SplashScreen.preventAutoHideAsync().catch((reason) => {
+    console.warn(reason);
+});
+export default function App() {
+    const [appIsReady, setAppIsReady] = useState(false);
 
-    const insertData = async () => {
+    async function prepare(): Promise<void> {
         try {
-            await initializeDatabase()
-            console.log('Mock data inserted successfully.');
-        } catch (error) {
-            console.error('Error inserting mock data:', error);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        } catch (e) {
+            console.warn(e);
+        } finally {
+            setAppIsReady(true);
         }
-    };
+    }
+
+    useEffect(() => {
+        prepare();
+    }, []);
+
+    const onLayoutRootView = useCallback(async () => {
+        if (appIsReady) {
+            // This tells the splash screen to hide immediately! If we call this after
+            // `setAppIsReady`, then we may see a blank screen while the app is
+            // loading its initial state and rendering its first pixels. So instead,
+            // we hide the splash screen once we know the root view has already
+            // performed layout.
+            await SplashScreen.hideAsync();
+        }
+    }, [appIsReady]);
+
+    if (!appIsReady) {
+        return null;
+    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <TouchableOpacity onPress={handlePress} style={styles.button}>
-                <Text style={styles.buttonText}>Insert Mock Data</Text>
-            </TouchableOpacity>
-        </SafeAreaView>
+        <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
+            <NavigationContainer>
+                <stackNavigator.Navigator>
+                    <stackNavigator.Screen
+                        name="Equiloria"
+                        component={Main}
+                        options={{
+                            headerTitle: 'Equiloria',
+                        }}
+                    />
+                </stackNavigator.Navigator>
+            </NavigationContainer>
+        </View>
     );
-};
-
-interface Styles {
-    container: ViewStyle;
-    button: ViewStyle;
-    buttonText: TextStyle;
 }
-
-const styles = StyleSheet.create<Styles>({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    button: {
-        backgroundColor: '#007AFF',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 5,
-    },
-    buttonText: {
-        color: '#FFF',
-        fontSize: 18,
-    },
-});
-
-export default App;
+const styles = StyleSheet.create({
+    applicationContainer: {
+        flex: 1
+    }
+})

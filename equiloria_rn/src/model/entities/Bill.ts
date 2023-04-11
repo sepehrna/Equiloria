@@ -1,6 +1,7 @@
 import {Entity} from "./Entity";
 import {v4 as generateUuid} from "uuid";
 import {Activity} from "./Activity";
+import {Expose} from "class-transformer";
 
 export module BillConstant {
     export const TABLE_NAME: string = 't_bills';
@@ -28,18 +29,22 @@ export class Bill implements Entity {
     }
 
 
+    @Expose({name: BillConstant.C_BILL_ID})
     get billId(): string {
         return this._billId;
     }
 
+    @Expose({name: BillConstant.C_BILL_NAME})
     get billName(): string {
         return this._billName;
     }
 
+    @Expose({name: BillConstant.C_BILL_DATE})
     get billDate(): Date {
         return this._billDate;
     }
 
+    @Expose({name: BillConstant.C_INSERT_TIME})
     get insertTime(): Date {
         return this._insertTime;
     }
