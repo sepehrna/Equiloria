@@ -25,7 +25,8 @@ const WrappedAvatar: React.FC<AvatarProps> = (props: AvatarProps) => {
                 <Text h3 style={styles.headerText}>{props.text}</Text>
                 <Text style={styles.headerSubText}>{props.subText}</Text>
             </View>
-        </View>);
+        </View>
+    );
 
 }
 const styles = StyleSheet.create({
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
         borderBottomColor: colors.grey3,
         borderRadius: 20
     },
-    textContainer:{
+    textContainer: {
         flexDirection: 'column',
         alignItems: 'flex-start',
         padding: 10,

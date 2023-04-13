@@ -2,24 +2,42 @@ import React from 'react';
 import {View, StyleSheet} from 'react-native';
 import {colors} from 'react-native-elements';
 import WrappedAvatar from "../components/WrappedAvatar";
-import WrappedGroupedList from "../components/WrappedGroupedList";
+import GroupedList, {GroupedListItem} from "../components/GroupedList";
+import {useDispatch} from "react-redux";
+import {create} from "../redux/GroupedListSlicer";
+import {AppDispatch} from "../redux/store";
 
 const Main: React.FC = () => {
+
+    const dispatch = useDispatch<AppDispatch>();
+
+    let activityList = 'activityList';
+    let billList = 'billList';
+    dispatch(create(billList));
+    dispatch(create(activityList));
+    const billItemLoader: () => GroupedListItem[] = () => {
+        return [{id: '1', value: 'McDonald'}
+            , {id: '2', value: 'Museum'}];
+    };
+    const activityItemLoader: () => GroupedListItem[] = () => {
+        return [{id: '1', value: 'London'}
+            , {id: '2', value: 'LondonTour'}];
+    }
+
     return (
         <View style={styles.container}>
             <WrappedAvatar text={'Sepehr Najjarpour'}
-            subText={'Account details'}/>
-            <WrappedGroupedList listTitle={'Bills'}
-                                extenderButtonName={'Add bill'}
-                                indicatorColor='#3374FF'
-                                items={[{title: 'McDonald', subtitle: 'McDonald'}
-                                    , {title: 'Museum', subtitle: 'Museum'}]}/>
-            <WrappedGroupedList listTitle={'Activities'}
-                                extenderButtonName={'Add activity'}
-                                indicatorColor='#FF4833'
-                                items={[{title: 'London', subtitle: 'London'}]}/>
-            {/*<a href="https://www.flaticon.com/free-icons/user" title="user icons">User icons created by Freepik -*/}
-            {/*    Flaticon</a>*/}
+                           subText={'Account details'}/>
+            <GroupedList listId={billList}
+                         listTitle={'Bills'}
+                         extenderButtonName={'Add bill'}
+                         indicatorColor='#3374FF'
+                         loaderFunction={billItemLoader}/>
+            <GroupedList listId={activityList}
+                         listTitle={'Activities'}
+                         extenderButtonName={'Add activity'}
+                         indicatorColor='#FF4833'
+                         loaderFunction={activityItemLoader}/>
         </View>
     );
 }

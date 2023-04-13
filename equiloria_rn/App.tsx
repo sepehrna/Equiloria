@@ -2,8 +2,11 @@ import React, {useCallback, useEffect, useState} from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import Main from "./src/view/screens/Main";
 import {StyleSheet, View} from "react-native";
+import BillDetail from "./src/view/screens/BillDetail";
+import Main from "./src/view/screens/Main";
+import {Provider} from "react-redux";
+import {store} from "./src/view/redux/store";
 
 const stackNavigator = createStackNavigator();
 SplashScreen.preventAutoHideAsync().catch((reason) => {
@@ -14,7 +17,7 @@ export default function App() {
 
     async function prepare(): Promise<void> {
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // await new Promise(resolve => setTimeout(resolve, 2000));
         } catch (e) {
             console.warn(e);
         } finally {
@@ -42,19 +45,31 @@ export default function App() {
     }
 
     return (
-        <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
-            <NavigationContainer>
-                <stackNavigator.Navigator>
-                    <stackNavigator.Screen
-                        name="Equiloria"
-                        component={Main}
-                        options={{
-                            headerTitle: 'Equiloria',
-                        }}
-                    />
-                </stackNavigator.Navigator>
-            </NavigationContainer>
-        </View>
+        <Provider store={store}>
+            <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
+                <NavigationContainer>
+                    <stackNavigator.Navigator>
+                        <stackNavigator.Screen
+                            name="Equiloria"
+                            component={Main}
+                            options={{
+                                headerTitle: 'Equiloria',
+                            }}
+                            // name="NewBill"
+                            // component={NewBill}
+                            // options={{
+                            //     headerTitle: 'New bill',
+                            // }}
+                            // name="BillDetail"
+                            // component={BillDetail}
+                            // options={{
+                            //     headerTitle: 'Bill detail',
+                            // }}
+                        />
+                    </stackNavigator.Navigator>
+                </NavigationContainer>
+            </View>
+        </Provider>
     );
 }
 const styles = StyleSheet.create({
