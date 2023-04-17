@@ -14,3 +14,6 @@
 
 .\bin\windows\kafka-topics.bat --create --topic equiloria-topic --bootstrap-server localhost:9092 -replication-factor 1 --partitions 1
 
+
+//This youtube movie could be useful: https://www.youtube.com/watch?v=EUzH9khPYgs
+
