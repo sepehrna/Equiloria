@@ -6,8 +6,16 @@ import GroupedList, {GroupedListItem} from "../components/GroupedList";
 import {useDispatch} from "react-redux";
 import {create} from "../redux/GroupedListSlicer";
 import {AppDispatch} from "../redux/store";
+import {useNavigation} from "@react-navigation/native";
+import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
+import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 
 const Main: React.FC = () => {
+
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
+    const navigateToAddBill: () => void = () => {
+        navigation.navigate('NewBill');
+    }
 
     const dispatch = useDispatch<AppDispatch>();
 
@@ -30,14 +38,16 @@ const Main: React.FC = () => {
                            subText={'Account details'}/>
             <GroupedList listId={billList}
                          listTitle={'Bills'}
-                         extenderButtonName={'Add bill'}
                          indicatorColor='#3374FF'
+                         extenderButtonName={'Add bill'}
+                         extenderButtonFunction={navigateToAddBill}
                          loaderFunction={billItemLoader}/>
             <GroupedList listId={activityList}
                          listTitle={'Activities'}
                          extenderButtonName={'Add activity'}
                          indicatorColor='#FF4833'
-                         loaderFunction={activityItemLoader}/>
+                         loaderFunction={activityItemLoader}
+                         extenderButtonFunction={navigateToAddBill}/>
         </View>
     );
 }

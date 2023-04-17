@@ -3,7 +3,6 @@ import {Text} from "react-native-elements";
 import React from "react";
 import {StyleProp} from "react-native/Libraries/StyleSheet/StyleSheet";
 import {TextStyle, ViewStyle} from "react-native/Libraries/StyleSheet/StyleSheetTypes";
-import {PressableStateCallbackType} from "react-native/Libraries/Components/Pressable/Pressable";
 
 
 export interface ActionButtonStateCallbackType {
@@ -14,9 +13,12 @@ interface ActionButtonProps {
 
     buttonStyle?:
         | StyleProp<ViewStyle>
-        | ((state: ActionButtonStateCallbackType) => StyleProp<ViewStyle>)
-        | undefined;
 
+    onPress?: () => {} | void | undefined;
+    backgroundColor?: string;
+    pressedBackgroundColor?: string;
+    disabled?: boolean;
+    disabledBackgroundColor?: boolean;
     text?: string;
     textStyle?: StyleProp<TextStyle>
 
@@ -24,26 +26,35 @@ interface ActionButtonProps {
 
 const ActionButton: React.FC<ActionButtonProps> = (props: ActionButtonProps) => {
 
-    type ActionButtonStyleFunction = (state: ActionButtonStateCallbackType) => StyleProp<ViewStyle>;
-    type PressableStyleFunction = (state: PressableStateCallbackType) => StyleProp<ViewStyle>;
-
-    function convertStyleFunction(originalFunction: ActionButtonStyleFunction): PressableStyleFunction {
-        return function (state: PressableStateCallbackType): StyleProp<ViewStyle> {
-            const actionButtonState: ActionButtonStateCallbackType = {
-                pressed: state.pressed,
-            };
-            return originalFunction(actionButtonState);
-        };
+    function getPropsColor(pressed: boolean) {
+        let resultColor: string | undefined = props.backgroundColor;
+        if (pressed) {
+            if (props.pressedBackgroundColor) {
+                resultColor = props.pressedBackgroundColor;
+            }
+        }
+        return {backgroundColor: resultColor};
     }
 
-    function identifyProperProps() {
-        return props.buttonStyle && typeof props.buttonStyle === 'function'
-            ? convertStyleFunction((props.buttonStyle as (state: ActionButtonStateCallbackType) => StyleProp<ViewStyle>)) : defaultStyles.button;
+    function defaultColor(pressed: boolean) {
+        if (props.disabled == null || !props.disabled) {
+            return {backgroundColor: pressed ? 'rgba(0, 122, 255, 0.5)' : 'rgb(0, 122, 255)'};
+        }
+        return {backgroundColor: 'gray'};
     }
 
     return (
         <Pressable
-            style={identifyProperProps()}>
+            style={({pressed}) => [
+                props.buttonStyle ? props.buttonStyle : defaultStyles.button,
+                props.backgroundColor ? getPropsColor(pressed) : defaultColor(pressed),
+            ]}
+            onPress={() => {
+                if (props.onPress) {
+                    props.onPress();
+                }
+                console.log('Button pressed');
+            }}>
             <Text style={props.textStyle ? props.textStyle : defaultStyles.buttonText}>{props.text}</Text>
         </Pressable>);
 }
@@ -52,10 +63,11 @@ const defaultStyles = StyleSheet.create({
     button: {
         justifyContent: 'center',
         alignItems: 'center',
-        paddingVertical: 12,
-        borderRadius: 4,
         marginBottom: 8,
-        backgroundColor: 'blue'
+        backgroundColor: 'blue',
+        borderRadius: 10,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
     },
     buttonPressed: {
         opacity: 0.5,

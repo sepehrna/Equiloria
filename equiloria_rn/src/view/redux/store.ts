@@ -1,9 +1,11 @@
 import {configureStore} from "@reduxjs/toolkit";
 import groupedListReducer from "./GroupedListSlicer"
+import handledPickerSlice from "./HandledPickerSlice";
 
 const store = configureStore({
     reducer: {
         groupList: groupedListReducer,
+        handledPicker: handledPickerSlice
     },
 });
 

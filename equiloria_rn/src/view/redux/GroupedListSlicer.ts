@@ -1,12 +1,12 @@
 import {createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {GroupedListItem} from "../components/GroupedList";
 
-export interface GroupedListState {
+interface GroupedListState {
     lists: Record<string, GroupedListItem[]>;
 
 }
 
-export const initialState: GroupedListState = {
+const initialState: GroupedListState = {
     lists: {} as Record<string, GroupedListItem[]>,
 };
 const groupedListSlice = createSlice({
@@ -23,19 +23,5 @@ const groupedListSlice = createSlice({
 });
 
 export const {create, load} = groupedListSlice.actions;
+export {GroupedListState}
 export default groupedListSlice.reducer;
-
-//     // state.groupedListItem = action.payload;
-//     // let groupedListItems = state.groupedListItem.slice();
-//     // console.info('InitState', groupedListItems)
-//     // let newItems = action.payload;
-//     // console.info('action', newItems);
-//     // newItems.forEach(value => {
-//     //     groupedListItems.push(value);
-//     // })
-//     // console.info('State', groupedListItems);
-//     // return {
-//     //     groupedListItem: groupedListItems
-//     // }
-//     // // action.payload.forEach(value => state.groupedListItem.push(value))
-// },

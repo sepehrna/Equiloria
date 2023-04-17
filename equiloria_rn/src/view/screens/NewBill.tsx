@@ -1,15 +1,25 @@
 import React from 'react';
 import {StyleSheet, View, TextInput} from 'react-native';
-import {Text} from 'react-native-elements';
 import ActionButton from "../components/ActionButton";
+import {useNavigation} from "@react-navigation/native";
+import {NativeStackNavigationProp} from "@react-navigation/native-stack";
+import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 
 const NewBill: React.FC = () => {
     const [billName, setBillName] = React.useState('');
 
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'NewBill'>>();
+
+    const navigateToScanner = () => {
+        navigation.navigate('Scanner');
+    }
+    const navigateToBillDetail = () => {
+        navigation.navigate('BillDetail', {totalAmount: 0});
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.inputContainer}>
-                <Text style={styles.inputLabel}>Enter name</Text>
                 <TextInput
                     style={styles.input}
                     value={billName}
@@ -18,10 +28,11 @@ const NewBill: React.FC = () => {
                 />
             </View>
             <View style={styles.buttonContainer}>
-                <ActionButton text='Scan bill'/>
+                <ActionButton text='Scan bill' onPress={navigateToScanner}/>
                 <ActionButton text='Enter manually'
-                              buttonStyle={({pressed}) => [styles.button, styles.enterManuallyButton, pressed && styles.buttonPressed]}
-                              textStyle={styles.buttonText}/>
+                              onPress={navigateToBillDetail}
+                              backgroundColor='black'
+                              pressedBackgroundColor='gray'/>
             </View>
         </View>
     );
@@ -34,30 +45,18 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     inputContainer: {
+        paddingHorizontal: 10,
         width: '80%',
-        backgroundColor: '#fff',
-        paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 4,
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 1},
-        shadowOpacity: 0.22,
-        shadowRadius: 2.22,
-        elevation: 3,
         marginBottom: 24,
     },
-    inputLabel: {
-        position: 'absolute',
-        top: -8,
-        left: 8,
-        paddingHorizontal: 4,
-        backgroundColor: '#fff',
-        color: 'rgba(0, 0, 0, 0.54)',
-        fontSize: 14,
-    },
     input: {
-        padding: 8,
-        fontSize: 16,
+        height: 40,
+        borderColor: 'gray',
+        borderWidth: 1,
+        borderRadius: 10,
+        paddingHorizontal: 10,
     },
     scanBillButton: {
         backgroundColor: 'blue',

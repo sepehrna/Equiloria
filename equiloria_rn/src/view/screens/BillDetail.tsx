@@ -5,40 +5,49 @@ import {
     Pressable,
     TextInput
 } from 'react-native';
-import {Picker} from '@react-native-picker/picker'
 import {Text} from 'react-native-elements';
 import ActionButton from "../components/ActionButton";
+import {RouteProp} from "@react-navigation/native";
+import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
+import HandledPicker, {HandledPickerItem} from "../components/HandledPicker";
+import {useDispatch} from "react-redux";
+import {AppDispatch} from "../redux/store";
+import {create} from "../redux/HandledPickerSlice";
 
-const BillDetailForm: React.FC = () => {
-    const [amount, setAmount] = useState(0);
-    const [activity, setActivity] = useState('');
+type BillDetailsRouteProp = RouteProp<RootStackParamList, 'BillDetail'>;
+type BillDetailFormProps = {
+    route: BillDetailsRouteProp;
+};
+
+const BillDetailForm: React.FC<BillDetailFormProps> = ({route}) => {
+    const [amount] = useState<number>(route.params.totalAmount);
     const [tipPercentage, setTipPercentage] = useState(0);
     const [tipAmount, setTipAmount] = useState('');
     const [description, setDescription] = useState('');
 
+    const dispatch = useDispatch<AppDispatch>();
+    dispatch(create('activityList'));
     const handleTipPercentage = (percentage: number) => {
         setTipPercentage(percentage);
         setTipAmount('');
     };
 
+    const activityItemLoader: () => HandledPickerItem[] = () => {
+        return [{value: '1', label: 'London'}
+            , {value: '2', label: 'LondonTour'}];
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.amountContainer}>
-                <Text style={styles.amountLabel}>Bill amount</Text>
+                <TextInput style={styles.amountLabel}>Bill amount</TextInput>
                 <Text style={styles.amountValue}>£{amount.toFixed(2)}</Text>
             </View>
             <View style={styles.componentContainer}>
                 <Text style={styles.label}>Activity</Text>
-                <View style={styles.pickerContainer}>
-                    <Picker
-                        selectedValue={activity}
-                        onValueChange={value => setActivity(value as string)}
-                        style={styles.picker}>
-                        <Picker.Item label="Choose activity" value=""/>
-                        <Picker.Item label="Activity 1" value="activity1"/>
-                        <Picker.Item label="Activity 2" value="activity2"/>
-                    </Picker>
-                </View>
+                <HandledPicker pickerId={'activity'}
+                               zeroItem={{value: '', label: 'Choose activity'}}
+                               loaderFunction={activityItemLoader}/>
             </View>
             <View style={styles.componentContainer}>
                 <Text style={styles.label}>Add tip amount</Text>
@@ -119,16 +128,7 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 24,
     },
-    pickerContainer: {
-        width: '80%',
-        backgroundColor: '#fff',
-        borderRadius: 4,
-        marginBottom: 24,
-    },
-    picker: {
-        width: '100%',
-    },
-    componentContainer:{
+    componentContainer: {
         justifyContent: 'space-between',
         width: '80%',
         marginBottom: 24,
@@ -209,5 +209,4 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     }
 });
-
 export default BillDetailForm;

@@ -1,14 +1,13 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import * as SplashScreen from 'expo-splash-screen';
-import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {StyleSheet, View} from "react-native";
-import BillDetail from "./src/view/screens/BillDetail";
-import Main from "./src/view/screens/Main";
 import {Provider} from "react-redux";
 import {store} from "./src/view/redux/store";
+import ApplicationNavigationContainer from "./src/view/routers/ApplicationNavigationContainer";
+import KeyboardAvoidingViewWrapper from "./src/view/components/KeyboardAvoidingViewWrapper";
 
-const stackNavigator = createStackNavigator();
+createStackNavigator();
 SplashScreen.preventAutoHideAsync().catch((reason) => {
     console.warn(reason);
 });
@@ -46,29 +45,11 @@ export default function App() {
 
     return (
         <Provider store={store}>
-            <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
-                <NavigationContainer>
-                    <stackNavigator.Navigator>
-                        <stackNavigator.Screen
-                            name="Equiloria"
-                            component={Main}
-                            options={{
-                                headerTitle: 'Equiloria',
-                            }}
-                            // name="NewBill"
-                            // component={NewBill}
-                            // options={{
-                            //     headerTitle: 'New bill',
-                            // }}
-                            // name="BillDetail"
-                            // component={BillDetail}
-                            // options={{
-                            //     headerTitle: 'Bill detail',
-                            // }}
-                        />
-                    </stackNavigator.Navigator>
-                </NavigationContainer>
-            </View>
+                <KeyboardAvoidingViewWrapper style={{flex: 1}}>
+                    <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
+                        <ApplicationNavigationContainer/>
+                    </View>
+                </KeyboardAvoidingViewWrapper>
         </Provider>
     );
 }

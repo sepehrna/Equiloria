@@ -1,11 +1,11 @@
-import React, {useEffect, useLayoutEffect} from 'react';
+import React from 'react';
 import {colors, Icon, ListItem} from "react-native-elements";
 import {Pressable, StyleSheet, View} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import {AppDispatch, RootState} from "../redux/store";
-import {create, load} from "../redux/GroupedListSlicer";
+import {load} from "../redux/GroupedListSlicer";
 
-export interface GroupedListItem {
+interface GroupedListItem {
     id: string;
     value: string;
 
@@ -17,8 +17,9 @@ interface GroupedListProps {
     listTitle: string;
     loaderFunction: () => GroupedListItem[];
     // items: GroupedListItem[];
-    extenderButtonName: string;
     indicatorColor?: string;
+    extenderButtonName: string;
+    extenderButtonFunction: () => void | undefined;
 
 }
 
@@ -52,9 +53,8 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
 
     function generateAddButton() {
         return (
-            <Pressable>
+            <Pressable onPress={props.extenderButtonFunction}>
                 <ListItem key={'add'}
-                          hitSlop={1000}
                           containerStyle={[styles.bottomElementContainerStyle, styles.buttonContainerStyle]}>
                     <Icon style={styles.extenderIcon} name='plus' type='font-awesome' color={props.indicatorColor}/>
                     <ListItem.Content>
@@ -102,4 +102,6 @@ const styles = StyleSheet.create({
         , justifyContent: "flex-end"
     }
 });
+
+export {GroupedListItem};
 export default GroupedList;
