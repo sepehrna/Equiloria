@@ -1,0 +1,16 @@
+//Please follow the instruction to run Kafka.
+//First of all you need to download and install Scala language with 2.13-3.10. You can find it here https://www.scala-lang.org/download/2.13.10.html
+//Second, you can download Kafka from https://downloads.apache.org/kafka/3.4.0/kafka_2.13-3.4.0.tgz
+//Extract the tgz file and open the extracted directory
+//Then, open the '.\config\zookeeper.properties' file to correct the dataDir property path and add a folder named zookeper-data at the end of the address.
+//This is an example: dataDir=C:\kafka\zookeeper-data
+//After that, open '.\config\server.properties' file and correct the log address property path
+//This is an example: log.dirs=C:/kafka/kafka_2.13-3.4.0/kafka-logs
+//Finally, run the three below commands on three different terminals from the Kafka path
+
+.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
+
+.\bin\windows\kafka-server-start.bat .\config\server.properties
+
+.\bin\windows\kafka-topics.bat --create --topic equiloria-topic --bootstrap-server localhost:9092 -replication-factor 1 --partitions 1
+
