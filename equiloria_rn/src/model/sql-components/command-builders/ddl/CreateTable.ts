@@ -1,5 +1,6 @@
 import DdlBuilder from "./DdlBuilder";
-import {ColumnDefinition, ColumnType} from "./ColumnDefinition";
+import {ColumnDefinition} from "./ColumnDefinition";
+import {ColumnType} from "../ColumnType";
 
 export default class CreateTable extends DdlBuilder {
 

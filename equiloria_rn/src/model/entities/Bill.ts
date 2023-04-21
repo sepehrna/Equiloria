@@ -1,7 +1,7 @@
 import {Entity} from "./Entity";
-import {v4 as generateUuid} from "uuid";
-import {Activity} from "./Activity";
-import {Expose} from "class-transformer";
+import {Activity, ActivityBuilder} from "./Activity";
+import {Expose, Transform, Type} from "class-transformer";
+import Location, {LocationBuilder} from "./Location";
 
 export module BillConstant {
     export const TABLE_NAME: string = 't_bills';
@@ -10,24 +10,26 @@ export module BillConstant {
     export const C_BILL_DATE: string = 'c_bill_date';
     export const C_INSERT_TIME: string = 'c_insert_time';
     export const F_ACTIVITY_ID: string = 'f_activity_id';
+    export const F_LOCATION_ID: string = 'f_location_id';
 }
 
 export class Bill implements Entity {
 
-    private _billId: string
-    private _billName: string
-    private _billDate: Date
-    private _insertTime: Date
-    private _activity: Activity | null
+    private _billId: string;
+    private _billName: string;
+    private _billDate: Date;
+    private _insertTime: Date;
+    private _location: Location | null;
+    private _activity: Activity | null;
 
     constructor() {
-        this._billId = generateUuid()
-        this._billName = ''
-        this._billDate = new Date()
-        this._insertTime = new Date()
-        this._activity = null
+        this._billId = '';
+        this._billName = '';
+        this._billDate = new Date();
+        this._insertTime = new Date();
+        this._location = null;
+        this._activity = null;
     }
-
 
     @Expose({name: BillConstant.C_BILL_ID})
     get billId(): string {
@@ -40,51 +42,93 @@ export class Bill implements Entity {
     }
 
     @Expose({name: BillConstant.C_BILL_DATE})
+    @Type(() => Date)
     get billDate(): Date {
         return this._billDate;
     }
 
     @Expose({name: BillConstant.C_INSERT_TIME})
+    @Type(() => Date)
     get insertTime(): Date {
         return this._insertTime;
+    }
+
+
+    @Expose({name: BillConstant.F_LOCATION_ID})
+    @Transform((params) => {
+        new LocationBuilder().locationId(params.value).build();
+    })
+    get location(): Location | null {
+        return this._location;
+    }
+
+    @Expose({name: BillConstant.F_ACTIVITY_ID})
+    @Transform((params) => {
+        new ActivityBuilder().activityId(params.value).build();
+    })
+    get activity(): Activity | null {
+        return this._activity;
     }
 
     set activity(value: Activity | null) {
         this._activity = value;
     }
 
+    set billId(value: string) {
+        this._billId = value;
+    }
+
     set billName(value: string) {
-        this._billName = value
+        this._billName = value;
     }
 
     set billDate(value: Date) {
-        this._billDate = value
+        this._billDate = value;
+    }
+
+    set insertTime(value: Date) {
+        this._insertTime = value;
+    }
+
+    set location(value: Location | null) {
+        this._location = value;
     }
 }
 
 export class BillBuilder {
-    private readonly bill: Bill
+    private readonly bill: Bill;
 
     constructor() {
-        this.bill = new Bill()
+        this.bill = new Bill();
+    }
+
+
+    billId(billId: string): BillBuilder {
+        this.bill.billId = billId;
+        return this;
     }
 
     billName(billName: string): BillBuilder {
-        this.bill.billName = billName
-        return this
+        this.bill.billName = billName;
+        return this;
     }
 
     billDate(billDate: Date): BillBuilder {
-        this.bill.billDate = billDate
-        return this
+        this.bill.billDate = billDate;
+        return this;
     }
 
     activity(activity: Activity): BillBuilder {
-        this.bill.activity = activity
-        return this
+        this.bill.activity = activity;
+        return this;
+    }
+
+    location(location: Location): BillBuilder {
+        this.bill.location = location;
+        return this;
     }
 
     build(): Bill {
-        return this.bill
+        return this.bill;
     }
 }

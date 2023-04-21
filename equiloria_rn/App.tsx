@@ -6,6 +6,7 @@ import {Provider} from "react-redux";
 import {store} from "./src/view/redux/store";
 import ApplicationNavigationContainer from "./src/view/routers/ApplicationNavigationContainer";
 import KeyboardAvoidingViewWrapper from "./src/view/components/KeyboardAvoidingViewWrapper";
+import {ConnectionStatusProvider} from "./src/view/components/ConnectionStatusContext";
 
 createStackNavigator();
 SplashScreen.preventAutoHideAsync().catch((reason) => {
@@ -45,11 +46,13 @@ export default function App() {
 
     return (
         <Provider store={store}>
+            <ConnectionStatusProvider>
                 <KeyboardAvoidingViewWrapper style={{flex: 1}}>
                     <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
                         <ApplicationNavigationContainer/>
                     </View>
                 </KeyboardAvoidingViewWrapper>
+            </ConnectionStatusProvider>
         </Provider>
     );
 }

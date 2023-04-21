@@ -23,20 +23,20 @@ export async function initializeDatabase() {
     // Generate mock data
     const activity1 = new ActivityBuilder()
         .activityName("Activity 1")
-        .activityDate(new Date(2023, 0, 1))
+        .toDate(new Date(2023, 0, 1))
         .bill(new BillBuilder().billName("Bill 1-1").billDate(new Date(2023, 0, 1)))
         .bill(new BillBuilder().billName("Bill 1-2").billDate(new Date(2023, 0, 2)))
         .build();
 
     const activity2 = new ActivityBuilder()
         .activityName("Activity 2")
-        .activityDate(new Date(2023, 1, 1))
+        .toDate(new Date(2023, 1, 1))
         .bill(new BillBuilder().billName("Bill 2-1").billDate(new Date(2023, 1, 1)))
         .build();
 
     const activity3 = new ActivityBuilder()
         .activityName("Activity 3")
-        .activityDate(new Date(2023, 2, 1))
+        .toDate(new Date(2023, 2, 1))
         .bill(new BillBuilder().billName("Bill 3-1").billDate(new Date(2023, 2, 1)))
         .bill(new BillBuilder().billName("Bill 3-2").billDate(new Date(2023, 2, 2)))
         .bill(new BillBuilder().billName("Bill 3-3").billDate(new Date(2023, 2, 3)))

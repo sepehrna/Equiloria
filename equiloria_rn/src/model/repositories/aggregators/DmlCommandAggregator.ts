@@ -13,9 +13,12 @@ export default class DmlCommandAggregator implements CommandAggregator<DmlBuilde
         this.transactionalCommands.push(command);
     }
 
+    public commands<T extends DmlBuilder>(commands: CommandAggregator<T>): void {
+        this.transactionalCommands.push(...commands.aggregate());
+    }
+
     public aggregate(): DmlBuilder[] {
         return this.transactionalCommands;
     }
-
 
 }

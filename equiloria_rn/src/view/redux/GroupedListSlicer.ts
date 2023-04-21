@@ -6,12 +6,12 @@ interface GroupedListState {
 
 }
 
-const initialState: GroupedListState = {
+const groupedListInitialState: GroupedListState = {
     lists: {} as Record<string, GroupedListItem[]>,
 };
 const groupedListSlice = createSlice({
     name: 'groupedList',
-    initialState,
+    initialState: groupedListInitialState,
     reducers: {
         create: (state, action: PayloadAction<string>) => {
             state.lists[action.payload] = [];
@@ -23,5 +23,5 @@ const groupedListSlice = createSlice({
 });
 
 export const {create, load} = groupedListSlice.actions;
-export {GroupedListState}
+export {GroupedListState, groupedListInitialState};
 export default groupedListSlice.reducer;

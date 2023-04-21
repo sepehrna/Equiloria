@@ -1,28 +1,31 @@
 import {Entity} from './Entity'
 import {Bill, BillBuilder} from "./Bill"
-import {Expose} from "class-transformer";
+import {Expose, Type} from "class-transformer";
 
 export module ActivityConstant {
     export const TABLE_NAME: string = 't_activities';
     export const C_ACTIVITY_ID: string = 'c_activity_id';
     export const C_ACTIVITY_NAME: string = 'c_activity_name';
-    export const C_ACTIVITY_DATE: string = 'c_activity_date';
+    export const C_FROM_DATE: string = 'c_from_date';
+    export const C_TO_DATE: string = 'c_to_date';
     export const C_INSERT_TIME: string = 'c_insert_time';
 }
 
 export class Activity implements Entity {
-    private _activityId: string
-    private _activityName: string
-    private _activityDate: Date
-    private _insertTime: Date
-    private _bills: Bill[]
+    private _insertTime: Date;
+    private _activityId: string;
+    private _activityName: string;
+    private _fromDate: Date | null;
+    private _toDate: Date | null;
+    private _bills: Bill[];
 
     constructor() {
-        this._activityId = ''
-        this._activityName = ''
-        this._activityDate = new Date()
-        this._insertTime = new Date()
-        this._bills = []
+        this._activityId = '';
+        this._activityName = '';
+        this._fromDate = null;
+        this._toDate = null;
+        this._insertTime = new Date();
+        this._bills = [];
     }
 
 
@@ -36,9 +39,17 @@ export class Activity implements Entity {
         return this._activityName;
     }
 
-    @Expose({name: ActivityConstant.C_ACTIVITY_DATE})
-    get activityDate(): Date {
-        return this._activityDate;
+
+    @Expose({name: ActivityConstant.C_FROM_DATE})
+    @Type(() => Date)
+    get fromDate(): Date | null {
+        return this._fromDate;
+    }
+
+    @Expose({name: ActivityConstant.C_TO_DATE})
+    @Type(() => Date)
+    get toDate(): Date | null {
+        return this._toDate;
     }
 
     @Expose({name: ActivityConstant.C_INSERT_TIME})
@@ -62,8 +73,12 @@ export class Activity implements Entity {
         this._activityName = value
     }
 
-    set activityDate(value: Date) {
-        this._activityDate = value
+    set fromDate(value: Date | null) {
+        this._fromDate = value;
+    }
+
+    set toDate(value: Date | null) {
+        this._toDate = value
     }
 
     set bills(value: Bill[]) {
@@ -88,8 +103,13 @@ export class ActivityBuilder {
         return this
     }
 
-    activityDate(activityDate: Date): ActivityBuilder {
-        this.activity.activityDate = activityDate
+    fromDate(fromDate: Date): ActivityBuilder {
+        this.activity.fromDate = fromDate;
+        return this;
+    }
+
+    toDate(toDate: Date): ActivityBuilder {
+        this.activity.toDate = toDate
         return this
     }
 

@@ -4,7 +4,6 @@ import React from "react";
 import {StyleProp} from "react-native/Libraries/StyleSheet/StyleSheet";
 import {TextStyle, ViewStyle} from "react-native/Libraries/StyleSheet/StyleSheetTypes";
 
-
 export interface ActionButtonStateCallbackType {
     readonly pressed: boolean;
 }
