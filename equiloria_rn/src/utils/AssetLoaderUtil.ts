@@ -1,7 +1,3 @@
-import {Image} from 'react-native';
-import {Asset} from "expo-asset";
-
-
 export const loadAssetsAsync = async () => {
 
     const imageAssets = [

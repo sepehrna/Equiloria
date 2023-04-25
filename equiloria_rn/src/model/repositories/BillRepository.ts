@@ -12,8 +12,12 @@ import {ColumnType} from "../sql-components/command-builders/ColumnType";
 import DdlBuilder from "../sql-components/command-builders/ddl/DdlBuilder";
 import {DqlBuilder} from "../sql-components/command-builders/dql/DqlBuilder";
 import UpdateTable from "../sql-components/command-builders/dml/UpdateTable";
+import {LocationConstant} from "../entities/Location";
+import {Direction} from "../sql-components/command-builders/OrderBy";
 
-export class BillRepository extends BaseRepository<Bill> {
+class BillRepository extends BaseRepository<Bill> {
+
+    public static billRepositoryName: string = 'BillRepository';
 
     constructor(executor: CommandExecutor) {
         super(executor);
@@ -26,10 +30,13 @@ export class BillRepository extends BaseRepository<Bill> {
             .primaryKey()
             .column(BillConstant.C_BILL_NAME, ColumnType.TEXT)
             .notNull()
+            .column(BillConstant.C_BILL_AMOUNT, ColumnType.TEXT)
+            .notNull()
             .column(BillConstant.C_BILL_DATE, ColumnType.INTEGER)
             .notNull()
             .column(BillConstant.C_INSERT_TIME, ColumnType.INTEGER)
-            .notNull();
+            .notNull()
+            .column(BillConstant.C_DESCRIPTION, ColumnType.INTEGER);
         await this.executeDdlCommand(createTableCommand);
     }
 
@@ -37,9 +44,10 @@ export class BillRepository extends BaseRepository<Bill> {
         const alterTableCommand: AlterTable = new AlterTable()
             .tableName(BillConstant.TABLE_NAME)
             .column(BillConstant.F_ACTIVITY_ID, ColumnType.TEXT)
-            .foreignKey(ActivityConstant.TABLE_NAME);
+            .foreignKey(ActivityConstant.TABLE_NAME)
+            .column(BillConstant.F_LOCATION_ID, ColumnType.TEXT)
+            .foreignKey(LocationConstant.TABLE_NAME);
         await this.executeDdlCommand(alterTableCommand);
-
     }
 
     public async dropTable(): Promise<void> {
@@ -100,7 +108,8 @@ export class BillRepository extends BaseRepository<Bill> {
         let commandBuilder: DqlBuilder<Bill> =
             new DqlBuilder(new BillBuilder().build())
                 .select('*')
-                .from(BillConstant.TABLE_NAME);
+                .from(BillConstant.TABLE_NAME)
+                .orderBy(BillConstant.C_INSERT_TIME, Direction.DESC);
         return await this.executeDqlCommand(commandBuilder);
     }
 
@@ -141,3 +150,5 @@ export class BillRepository extends BaseRepository<Bill> {
         return await this.executeDqlCommand(commandBuilder);
     }
 }
+
+export default BillRepository;

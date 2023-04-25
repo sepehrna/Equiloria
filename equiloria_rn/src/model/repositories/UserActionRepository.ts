@@ -15,6 +15,7 @@ import DmlCommandAggregator from "./aggregators/DmlCommandAggregator";
 export default class UserActionRepository extends BaseRepository<UserAction> {
 
     actionObjectRepository: ActionObjectRepository;
+    public static userActionRepositoryName: string = 'UserActionRepository';
 
     constructor(executor: CommandExecutor, actionObjectRepository: ActionObjectRepository) {
         super(executor);

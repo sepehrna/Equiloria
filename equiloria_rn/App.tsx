@@ -5,8 +5,8 @@ import {StyleSheet, View} from "react-native";
 import {Provider} from "react-redux";
 import {store} from "./src/view/redux/store";
 import ApplicationNavigationContainer from "./src/view/routers/ApplicationNavigationContainer";
-import KeyboardAvoidingViewWrapper from "./src/view/components/KeyboardAvoidingViewWrapper";
 import {ConnectionStatusProvider} from "./src/view/components/ConnectionStatusContext";
+import KeyboardHandler from "./src/view/components/KeyboardHandler";
 
 createStackNavigator();
 SplashScreen.preventAutoHideAsync().catch((reason) => {
@@ -17,7 +17,7 @@ export default function App() {
 
     async function prepare(): Promise<void> {
         try {
-            // await new Promise(resolve => setTimeout(resolve, 2000));
+            // await initSystem(Platform.OS);
         } catch (e) {
             console.warn(e);
         } finally {
@@ -47,11 +47,11 @@ export default function App() {
     return (
         <Provider store={store}>
             <ConnectionStatusProvider>
-                <KeyboardAvoidingViewWrapper style={{flex: 1}}>
+                <KeyboardHandler style={{flex: 1}}>
                     <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
                         <ApplicationNavigationContainer/>
                     </View>
-                </KeyboardAvoidingViewWrapper>
+                </KeyboardHandler>
             </ConnectionStatusProvider>
         </Provider>
     );

@@ -1,15 +1,18 @@
 import {Activity} from "../model/entities/Activity";
 import {Bill} from "../model/entities/Bill";
 
+export const actionServicesInterfaceName: string = 'IActionService'
 export default interface IActionService {
 
     fetchAllActivities(): Promise<Activity[]>;
 
-    getActivityData(): Promise<Activity>;
+    getActivityData(activityId: string): Promise<Activity | null>;
 
-    fetchUnGroupedBills(): Promise<Bill[]>;
+    registerNewBill(newBill: Bill): Promise<void>;
 
-    getBillData(billId: string): Promise<Bill>;
+    fetchAllBills(): Promise<Bill[]>;
+
+    getBillData(billId: string): Promise<Bill | null>;
 
 
 }

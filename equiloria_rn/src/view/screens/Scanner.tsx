@@ -1,17 +1,23 @@
-import React, {useState, useEffect, useRef, RefObject} from 'react';
+import React, {useState, useCallback , useRef, RefObject} from 'react';
 import {StyleSheet, View, Image, TextInput} from 'react-native';
 import {Camera} from 'expo-camera';
-import {useNavigation} from "@react-navigation/native";
+import {RouteProp, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import ActionButton from "../components/ActionButton";
-import TextRecognition from 'react-native-text-recognition';
-// import { recognize } from 'react-native-text-recognition';
 import {CameraCapturedPicture} from "expo-camera/src/Camera.types";
 import MlkitOcr from 'react-native-mlkit-ocr';
 import {MlkitOcrResult} from "react-native-mlkit-ocr/src";
+import { useFocusEffect } from '@react-navigation/native';
 
-const Scanner: React.FC = () => {
+
+type ScannerRouteProp = RouteProp<RootStackParamList, 'Scanner'>;
+type ScannerScreenProps = {
+    route: ScannerRouteProp;
+};
+const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
+
+    const billName: string = route.params.billName;
     const cameraRef: RefObject<Camera> = useRef<Camera>(null);
 
     const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -21,16 +27,25 @@ const Scanner: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Scanner'>>();
 
     const navigateToDetail = () => {
-        console.info(totalAmount);
-        navigation.navigate('BillDetail', {totalAmount: +totalAmount});
+        navigation.navigate('BillDetail', {billName: billName, totalAmount: +totalAmount});
     }
 
-    useEffect(() => {
-        (async () => {
-            const {status} = await Camera.requestCameraPermissionsAsync();
-            setHasPermission(status === 'granted');
-        })();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const requestCameraPermission = async () => {
+                const { status } = await Camera.requestCameraPermissionsAsync();
+                setHasPermission(status === 'granted');
+            };
+
+            requestCameraPermission();
+
+            return () => {
+                if (cameraRef) {
+                    cameraRef.current?.pausePreview();
+                }
+            };
+        }, [cameraRef])
+    );
 
     const recognizeText = async (imageUri: string | null) => {
         const options = {
@@ -94,13 +109,13 @@ const Scanner: React.FC = () => {
             <TextInput
                 style={defaultStyles.amountInput}
                 value={totalAmount}
-                keyboardType="numeric"
-                placeholder="Total Amount"
+                keyboardType='numeric'
+                placeholder='Total Amount'
                 onChangeText={setTotalAmount}
             />
             <View style={defaultStyles.buttonContainer}>
-                <ActionButton text={'Take'} onPress={captureImage}/>
-                <ActionButton text={'Enter manually'} backgroundColor={'black'} onPress={navigateToDetail}/>
+                <ActionButton text={'Take'} backgroundColor={'green'} onPress={captureImage}/>
+                <ActionButton text={'Done'} onPress={navigateToDetail}/>
             </View>
         </View>
     );
@@ -113,7 +128,6 @@ const defaultStyles = StyleSheet.create({
     },
     camera: {
         flex: 1,
-        // margin: 20,
     },
     overlay: {
         flex: 1,

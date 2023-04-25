@@ -1,9 +1,10 @@
 import React from 'react';
-import {StyleSheet, View, TextInput} from 'react-native';
+import {SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
 import ActionButton from "../components/ActionButton";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
+import {preventingAlert, ValidationType} from "../utils/ValidationHelper";
 
 const NewBill: React.FC = () => {
     const [billName, setBillName] = React.useState('');
@@ -11,15 +12,24 @@ const NewBill: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'NewBill'>>();
 
     const navigateToScanner = () => {
-        navigation.navigate('Scanner');
+        if (billName != '' || billName !== '') {
+            navigation.navigate('Scanner', {billName: billName});
+        } else {
+            preventingAlert('Bill name', ValidationType.EMPTY);
+        }
     }
     const navigateToBillDetail = () => {
-        navigation.navigate('BillDetail', {totalAmount: 0});
+        if (billName != '' || billName !== '') {
+            navigation.navigate('BillDetail', {billName: billName, totalAmount: 0});
+        } else {
+            preventingAlert('Bill name', ValidationType.EMPTY);
+        }
     }
 
     return (
-        <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.inputContainer}>
+                <Text style={styles.asterisk}>* Required</Text>
                 <TextInput
                     style={styles.input}
                     value={billName}
@@ -34,7 +44,7 @@ const NewBill: React.FC = () => {
                               backgroundColor='black'
                               pressedBackgroundColor='gray'/>
             </View>
-        </View>
+        </ScrollView>
     );
 };
 
@@ -83,6 +93,12 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 16,
+    },
+    asterisk: {
+        fontSize: 12,
+        color: 'red',
+        marginLeft: 2,
+        marginBottom: 5
     }
 });
 export default NewBill;

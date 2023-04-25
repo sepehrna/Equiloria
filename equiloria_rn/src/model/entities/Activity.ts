@@ -1,6 +1,7 @@
 import {Entity} from './Entity'
 import {Bill, BillBuilder} from "./Bill"
-import {Expose, Type} from "class-transformer";
+import {Expose, Transform, Type} from "class-transformer";
+import ConsumptionType from "./ConsumptionType";
 
 export module ActivityConstant {
     export const TABLE_NAME: string = 't_activities';
@@ -9,6 +10,7 @@ export module ActivityConstant {
     export const C_FROM_DATE: string = 'c_from_date';
     export const C_TO_DATE: string = 'c_to_date';
     export const C_INSERT_TIME: string = 'c_insert_time';
+    export const F_CONSUMPTION_TYPE: string = 'f_consumption_type';
 }
 
 export class Activity implements Entity {
@@ -17,6 +19,7 @@ export class Activity implements Entity {
     private _activityName: string;
     private _fromDate: Date | null;
     private _toDate: Date | null;
+    private _consumptionType: ConsumptionType | null;
     private _bills: Bill[];
 
     constructor() {
@@ -25,6 +28,7 @@ export class Activity implements Entity {
         this._fromDate = null;
         this._toDate = null;
         this._insertTime = new Date();
+        this._consumptionType = null;
         this._bills = [];
     }
 
@@ -57,6 +61,14 @@ export class Activity implements Entity {
         return this._insertTime;
     }
 
+    @Expose({name: ActivityConstant.F_CONSUMPTION_TYPE})
+    // @Transform((params) => {
+    //     new ActivityBuilder().activityId(params.value).build();
+    // })
+    get consumptionType(): ConsumptionType | null {
+        return this._consumptionType;
+    }
+
     get bills(): Bill[] {
         return this._bills;
     }
@@ -79,6 +91,10 @@ export class Activity implements Entity {
 
     set toDate(value: Date | null) {
         this._toDate = value
+    }
+
+    set consumptionType(value: ConsumptionType | null) {
+        this._consumptionType = value;
     }
 
     set bills(value: Bill[]) {
@@ -115,6 +131,11 @@ export class ActivityBuilder {
 
     insertTime(insertTime: Date): ActivityBuilder {
         this.activity.insertTime = insertTime;
+        return this;
+    }
+
+    consumptionType(consumptionType: ConsumptionType): ActivityBuilder {
+        this.activity.consumptionType = consumptionType;
         return this;
     }
 

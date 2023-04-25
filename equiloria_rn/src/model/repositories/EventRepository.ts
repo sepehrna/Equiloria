@@ -14,6 +14,7 @@ import UserActionRepository from "./UserActionRepository";
 
 export default class EventRepository extends BaseRepository<Event> {
 
+    public static eventRepositoryName: string = 'EventRepository';
     private userActionRepository: UserActionRepository;
 
     constructor(executor: CommandExecutor, userActionRepository: UserActionRepository) {

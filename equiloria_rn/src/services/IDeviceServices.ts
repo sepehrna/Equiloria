@@ -1,9 +1,13 @@
-import * as Network from "expo-network";
 import {NetStatus} from "../common/types/NetStatus";
+import {LocationCoordinates} from "../common/types/LocationCoordinates";
 
-export const DeviceServicesName: string = 'IDeviceServices'
+export const deviceServicesInterfaceName: string = 'IDeviceServices'
 
 export default interface IDeviceServices {
     checkInternetConnection(): Promise<NetStatus>;
+
+    getLocationAccessPermission(): Promise<Boolean>;
+
+    getDeviceLocation(isGranted: boolean): Promise<LocationCoordinates>;
 
 }

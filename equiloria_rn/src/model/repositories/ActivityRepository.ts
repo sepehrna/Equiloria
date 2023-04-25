@@ -3,7 +3,7 @@ import {Activity, ActivityBuilder, ActivityConstant} from "../entities/Activity"
 import CommandExecutor from "../sql-components/command-executors/CommandExecutor";
 import CreateTable from "../sql-components/command-builders/ddl/CreateTable";
 import {InsertInto} from "../sql-components/command-builders/dml/InsertInto";
-import {BillRepository} from "./BillRepository";
+
 import {DqlBuilder} from "../sql-components/command-builders/dql/DqlBuilder";
 import {Direction} from "../sql-components/command-builders/OrderBy";
 import DeleteTable from "../sql-components/command-builders/dml/DeleteTable";
@@ -12,9 +12,14 @@ import DropTable from "../sql-components/command-builders/ddl/DropTable";
 import DmlCommandAggregator from "./aggregators/DmlCommandAggregator";
 import {ColumnType} from "../sql-components/command-builders/ColumnType";
 import UpdateTable from "../sql-components/command-builders/dml/UpdateTable";
+import BillRepository from "./BillRepository";
+import AlterTable from "../sql-components/command-builders/ddl/AlterTable";
+import {ConsumptionTypeConstant} from "../entities/ConsumptionType";
 
-export class ActivityRepository extends BaseRepository<Activity> {
 
+
+class ActivityRepository extends BaseRepository<Activity> {
+    public static activityRepositoryName: string = 'ActivityRepository';
     private billRepository: BillRepository;
 
     constructor(executor: CommandExecutor, billRepository: BillRepository) {
@@ -35,6 +40,14 @@ export class ActivityRepository extends BaseRepository<Activity> {
             .column(ActivityConstant.C_TO_DATE, ColumnType.INTEGER);
 
         await this.executeDdlCommand(createTableCommand);
+    }
+
+    public async addAllRelations(): Promise<void> {
+        const alterTableCommand: AlterTable = new AlterTable()
+            .tableName(ActivityConstant.TABLE_NAME)
+            .column(ActivityConstant.F_CONSUMPTION_TYPE, ColumnType.TEXT)
+            .foreignKey(ConsumptionTypeConstant.TABLE_NAME)
+        await this.executeDdlCommand(alterTableCommand);
     }
 
     public async dropTable(): Promise<void> {
@@ -81,8 +94,16 @@ export class ActivityRepository extends BaseRepository<Activity> {
             const commandAggregator = new DmlCommandAggregator();
             const updateCommandBuilder = new UpdateTable()
                 .tableName(ActivityConstant.TABLE_NAME)
-                .column(ActivityConstant.C_ACTIVITY_NAME, activity.activityName !== foundActivity.activityName ? activity.activityName : foundActivity.activityName)
-                .column(ActivityConstant.C_TO_DATE, activity.toDate !== foundActivity.toDate ? activity.toDate : foundActivity.toDate)
+                .column(ActivityConstant.C_ACTIVITY_NAME, activity.activityName !== foundActivity.activityName ? activity.activityName : foundActivity.activityName);
+            if (activity.fromDate != null) {
+                updateCommandBuilder
+                    .column(ActivityConstant.C_FROM_DATE, activity.fromDate !== foundActivity.fromDate ? activity.fromDate : foundActivity.fromDate);
+            }
+            if (activity.toDate != null) {
+                updateCommandBuilder
+                    .column(ActivityConstant.C_TO_DATE, activity.toDate !== foundActivity.toDate ? activity.toDate : foundActivity.toDate);
+            }
+            updateCommandBuilder
                 .where(ActivityConstant.C_ACTIVITY_ID, activity.activityId);
             commandAggregator.command(updateCommandBuilder);
             for (const bill of activity.bills) {
@@ -130,5 +151,6 @@ export class ActivityRepository extends BaseRepository<Activity> {
         }
         return result;
     }
-
 }
+
+export default ActivityRepository;

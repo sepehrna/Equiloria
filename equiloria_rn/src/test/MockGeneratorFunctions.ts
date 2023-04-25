@@ -1,8 +1,8 @@
 import SqliteInMemoryCommandExecutor from "../model/sql-components/command-executors/SqliteInMemoryCommandExecutor";
 import {Activity, ActivityBuilder} from "../model/entities/Activity";
 import {BillBuilder} from "../model/entities/Bill";
-import {ActivityRepository} from "../model/repositories/ActivityRepository";
-import {BillRepository} from "../model/repositories/BillRepository";
+import ActivityRepository from "../model/repositories/ActivityRepository";
+import BillRepository from "../model/repositories/BillRepository";
 
 export async function initializeDatabase() {
     const executor = SqliteInMemoryCommandExecutor.getInstance();

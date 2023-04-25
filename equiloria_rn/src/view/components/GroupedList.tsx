@@ -15,7 +15,7 @@ interface GroupedListProps {
 
     listId: string;
     listTitle: string;
-    loaderFunction: () => GroupedListItem[];
+    items: GroupedListItem[] | [];
     // items: GroupedListItem[];
     indicatorColor?: string;
     extenderButtonName: string;
@@ -29,7 +29,7 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
     const dispatch = useDispatch<AppDispatch>();
 
     const handleLoadItems = () => {
-        dispatch(load({listId, items: props.loaderFunction()}));
+        dispatch(load({listId, items: props.items}));
     };
 
     function generateListItems() {

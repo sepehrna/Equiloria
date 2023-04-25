@@ -39,7 +39,6 @@ export default class Location {
         return this._longitude;
     }
 
-
     @Expose({name: LocationConstant.C_INSERT_TIME})
     @Type(() => Date)
     get insertTime(): Date {

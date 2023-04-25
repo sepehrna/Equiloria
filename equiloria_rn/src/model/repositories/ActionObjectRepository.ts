@@ -13,6 +13,7 @@ import {v4 as generateUuid} from "uuid";
 
 
 export default class ActionObjectRepository extends BaseRepository<ActionObject> {
+    public static actionObjectRepositoryName: string = 'ActionObjectRepository';
     constructor(executor: CommandExecutor) {
         super(executor);
     }

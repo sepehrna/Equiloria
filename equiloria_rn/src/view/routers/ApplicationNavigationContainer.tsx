@@ -9,8 +9,8 @@ import Scanner from "../screens/Scanner";
 type RootStackParamList = {
     Main: undefined;
     NewBill: undefined;
-    Scanner: undefined
-    BillDetail: { totalAmount: number };
+    Scanner: { billName: string }
+    BillDetail: { billName: string, totalAmount: number };
 };
 
 const stackNavigator = createStackNavigator<RootStackParamList>();

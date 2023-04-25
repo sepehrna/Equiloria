@@ -52,7 +52,6 @@ const ActionButton: React.FC<ActionButtonProps> = (props: ActionButtonProps) => 
                 if (props.onPress) {
                     props.onPress();
                 }
-                console.log('Button pressed');
             }}>
             <Text style={props.textStyle ? props.textStyle : defaultStyles.buttonText}>{props.text}</Text>
         </Pressable>);
