@@ -1,13 +1,8 @@
-import React, {ReactNode, useState} from 'react';
-import {
-    StyleSheet,
-    View,
-    Pressable,
-    TextInput, FlatList
-} from 'react-native';
+import React, {ReactNode, useEffect, useState} from 'react';
+import {FlatList, Pressable, StyleSheet, TextInput, View} from 'react-native';
 import {Text} from 'react-native-elements';
 import ActionButton from "../components/ActionButton";
-import {RouteProp} from "@react-navigation/native";
+import {RouteProp, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import HandledPicker, {HandledPickerItem} from "../components/HandledPicker";
 import {useDispatch} from "react-redux";
@@ -15,7 +10,11 @@ import {AppDispatch} from "../redux/store";
 import {create} from "../redux/HandledPickerSlice";
 import {getDeviceLocation, getLocationAccessPermission} from "../../controller/DeviceServicesController";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {registerNewBill} from "../../controller/ActionServiceController";
+import {fetchBill, registerNewBill, updateBill} from "../../controller/ActionServiceController";
+import {NativeStackNavigationProp} from "@react-navigation/native-stack";
+import {preventingAlert, ValidationType} from "../utils/ValidationHelper";
+import {initialLocationCoordinates, LocationCoordinates} from "../../common/types/LocationCoordinates";
+import {Bill} from "../../model/entities/Bill";
 
 type BillDetailsRouteProp = RouteProp<RootStackParamList, 'BillDetail'>;
 type BillDetailScreenProps = {
@@ -28,25 +27,46 @@ type ScreenComponentFlatListItemProps = {
 }
 
 const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
-    const billName: string = route.params.billName;
-    const inputTotalAmount: number = route.params.totalAmount;
-    let amountInitialState: string = inputTotalAmount === 0 ? '0.00' : inputTotalAmount.toFixed(2);
-    const [amount, setAmount] = useState<string>(amountInitialState);
+    const isUpdate = route.params.billId != undefined && route.params.billId !== '';
+    const [billName, setBillName] = useState<string>('')
+    const [amount, setAmount] = useState<string>('0.00');
     const [tipPercentage, setTipPercentage] = useState<number>(0);
     const [tipAmount, setTipAmount] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [locationAccessStatus, setLocationAccessStatus] = useState<Boolean | null>(null);
     const dispatch = useDispatch<AppDispatch>();
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
+    const init = async () => {
+        if (isUpdate) {
+            let bill: Bill | null = await fetchBill(route.params.billId);
+            if (bill != null) {
+                setBillName(bill?.billName);
+                setAmount(bill.billAmount.toFixed(2));
+                if (bill.description != null) {
+                    setDescription(bill.description);
+                }
+            }
+        } else {
+            const inputTotalAmount: number | undefined = route.params.totalAmount;
+            if (inputTotalAmount != undefined) {
+                setAmount(inputTotalAmount === 0 ? '0.00' : inputTotalAmount.toFixed(2));
+            }
+            if (route.params.billName != undefined) {
+                setBillName(route.params.billName);
+            }
+        }
+        dispatch(create('activityList'));
+    }
 
-    dispatch(create('activityList'));
+    useEffect(() => {
+        init();
+    }, [])
+
     const getLocationPermission = async () => {
         if (locationAccessStatus == null) {
             let locationAccessPermission: Boolean = await getLocationAccessPermission();
             setLocationAccessStatus(locationAccessPermission)
         }
-    };
-    const getLocation = async (isGranted: boolean) => {
-        await getDeviceLocation(isGranted);
     }
     const handleTipPercentage = (percentage: number) => {
         setTipPercentage(percentage);
@@ -63,16 +83,52 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         }
     }
 
+    const navigateToMain = () => {
+        navigation.navigate('Main');
+    }
+
+    async function register() {
+        let locationCoordinates: LocationCoordinates = initialLocationCoordinates;
+        if (locationAccessStatus != null && locationAccessStatus) {
+            locationCoordinates = await getDeviceLocation(true);
+        }
+        await registerNewBill(billName, +amount, description, locationCoordinates.latitude, locationCoordinates.longitude);
+        navigateToMain();
+    }
+
+    function calculateTipAmount() {
+        let finalAmount: number = 0;
+        if (tipPercentage === 10) {
+            finalAmount = +amount + ((+amount * 10) / 100);
+        }
+        if (tipPercentage === 20) {
+            finalAmount = +amount + ((+amount * 20) / 100);
+        } else if (tipAmount !== '') {
+            finalAmount = +amount + +tipAmount;
+        }
+        setAmount(finalAmount.toFixed(0));
+    }
+
     async function submit(): Promise<void> {
-        // await registerNewBill(billName, +amount, description);
+        await getLocationPermission();
+        if (amount != null && amount !== '' && amount !== '0') {
+            calculateTipAmount();
+            if (isUpdate) {
+                await updateBill(route.params.billId, +amount, description);
+            } else {
+                await register();
+            }
+        } else {
+            preventingAlert('Amount', ValidationType.EMPTY)
+        }
     }
 
     const mainFlatListData = new Array<ScreenComponentFlatListItemProps>();
-    mainFlatListData.push({componentId: '1', componentGenerator: getAmountContainer})
-    mainFlatListData.push({componentId: '2', componentGenerator: getActivityDropDownContainer})
-    mainFlatListData.push({componentId: '3', componentGenerator: getTipAmountContainer})
-    mainFlatListData.push({componentId: '4', componentGenerator: getDescriptionContainer})
-    mainFlatListData.push({componentId: '5', componentGenerator: getButtonContainer})
+    mainFlatListData.push({componentId: '1', componentGenerator: getAmountContainer});
+    mainFlatListData.push({componentId: '2', componentGenerator: getActivityDropDownContainer});
+    mainFlatListData.push({componentId: '3', componentGenerator: getTipAmountContainer});
+    mainFlatListData.push({componentId: '4', componentGenerator: getDescriptionContainer});
+    mainFlatListData.push({componentId: '5', componentGenerator: getButtonContainer});
 
     function getAmountContainer() {
         return (
@@ -163,7 +219,8 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         <SafeAreaView style={styles.container}>
             <FlatList
                 data={mainFlatListData}
-                renderItem={(item) => <View style={styles.componentContainer}>{item.item.componentGenerator()}</View>}
+                renderItem={(item) => <View
+                    style={styles.componentContainer}>{item.item.componentGenerator()}</View>}
                 keyExtractor={item => item.componentId}
                 scrollEnabled={true}
             />

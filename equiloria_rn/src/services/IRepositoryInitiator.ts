@@ -1,7 +1,8 @@
-export const repositoryInitiatorName: string = 'IRepositoryInitiator';
-
+export module RepositoryInitiatorDefinition {
+    export const REPOSITORY_INITIATOR_NAME: string = 'IRepositoryInitiator';
+}
 interface IRepositoryInitiator {
-    initializeDatabase(): Promise<Boolean>;
+    initializeDatabase(dbName: string): Promise<Boolean>;
 }
 
 export default IRepositoryInitiator;

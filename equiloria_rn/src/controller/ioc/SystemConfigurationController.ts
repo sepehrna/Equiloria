@@ -1,11 +1,18 @@
-import IRepositoryInitiator, {repositoryInitiatorName} from "../../services/IRepositoryInitiator";
+import {DefaultIoCContainer} from "./DefaultIoCContainer";
+import IRepositoryInitiator, {RepositoryInitiatorDefinition} from "../../services/IRepositoryInitiator";
+import REPOSITORY_INITIATOR_NAME = RepositoryInitiatorDefinition.REPOSITORY_INITIATOR_NAME;
 import ContainerProvider from "./ContainerProvider";
 
-const repositoryInitiator: IRepositoryInitiator = ContainerProvider.provide().resolve(repositoryInitiatorName);
 async function initSystem(platform: string): Promise<void> {
     handleLog(platform);
-    await repositoryInitiator.initializeDatabase();
+    let ioCContainer: DefaultIoCContainer = ContainerProvider.provide() as DefaultIoCContainer;
+    ioCContainer.initialize();
+    let iRepositoryInitiator: IRepositoryInitiator = ioCContainer.resolve(REPOSITORY_INITIATOR_NAME) as IRepositoryInitiator;
+    if (iRepositoryInitiator != null) {
+        await iRepositoryInitiator.initializeDatabase(ContainerProvider.defaultDatabaseName);
+    }
 }
+
 function handleLog(platform: string) {
 
     if (platform !== 'web') {
@@ -30,6 +37,4 @@ function handleLog(platform: string) {
     }
 }
 
-export {handleLog};
-
-export {initSystem};
+export {handleLog, initSystem};

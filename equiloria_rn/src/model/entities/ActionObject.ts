@@ -24,29 +24,29 @@ export class ActionObject implements Entity {
         this._bill = null;
     }
 
-    @Expose({name: ActionObjectConstant.C_ACTION_OBJECT_ID})
+    // @Expose({name: ActionObjectConstant.C_ACTION_OBJECT_ID})
     get actionObjectId(): string {
         return this._actionObjectId;
     }
 
-    @Expose({name: ActionObjectConstant.C_INSERT_TIME})
-    @Type(() => Date)
+    // @Expose({name: ActionObjectConstant.C_INSERT_TIME})
+    // @Type(() => Date)
     get insertTime(): Date {
         return this._insertTime;
     }
 
-    @Expose({name: ActionObjectConstant.F_ACTIVITY_ID})
-    @Transform((params) => {
-        new ActivityBuilder().activityId(params.value).build();
-    })
+    // @Expose({name: ActionObjectConstant.F_ACTIVITY_ID})
+    // @Transform((params) => {
+    //     new ActivityBuilder().activityId(params.value).build();
+    // })
     get activity(): Activity | null {
         return this._activity;
     }
 
-    @Expose({name: ActionObjectConstant.F_BILL_ID})
-    @Transform((params) => {
-        new BillBuilder().billId(params.value).build();
-    })
+    // @Expose({name: ActionObjectConstant.F_BILL_ID})
+    // @Transform((params) => {
+    //     new BillBuilder().billId(params.value).build();
+    // })
     get bill(): Bill | null {
         return this._bill;
     }

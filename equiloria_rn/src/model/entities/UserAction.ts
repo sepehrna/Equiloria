@@ -21,21 +21,21 @@ export class UserAction implements Entity {
         this._actionObject = new ActionObject();
     }
 
-    @Expose({name: UserActionConstant.C_USER_ACTION_ID})
+    // @Expose({name: UserActionConstant.C_USER_ACTION_ID})
     get userActionId(): string {
         return this._userActionId;
     }
 
-    @Expose({name: UserActionConstant.C_INSERT_TIME})
-    @Type(() => Date)
+    // @Expose({name: UserActionConstant.C_INSERT_TIME})
+    // @Type(() => Date)
     get insertTime(): Date {
         return this._insertTime;
     }
 
-    @Expose({name: UserActionConstant.F_ACTION_OBJECT_ID})
-    @Transform((params) => {
-        new ActivityBuilder().activityId(params.value).build();
-    })
+    // @Expose({name: UserActionConstant.F_ACTION_OBJECT_ID})
+    // @Transform((params) => {
+    //     new ActivityBuilder().activityId(params.value).build();
+    // })
     get actionObject(): ActionObject {
         return this._actionObject;
     }

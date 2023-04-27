@@ -4,7 +4,6 @@ import CreateTable from "../sql-components/command-builders/ddl/CreateTable";
 import {InsertInto} from "../sql-components/command-builders/dml/InsertInto";
 import CommandExecutor from "../sql-components/command-executors/CommandExecutor";
 import AlterTable from "../sql-components/command-builders/ddl/AlterTable";
-import {v4 as generateUuid} from "uuid";
 import DropTable from "../sql-components/command-builders/ddl/DropTable";
 import DmlBuilder from "../sql-components/command-builders/dml/DmlBuilder";
 import {ActivityConstant} from "../entities/Activity";
@@ -14,13 +13,21 @@ import {DqlBuilder} from "../sql-components/command-builders/dql/DqlBuilder";
 import UpdateTable from "../sql-components/command-builders/dml/UpdateTable";
 import {LocationConstant} from "../entities/Location";
 import {Direction} from "../sql-components/command-builders/OrderBy";
+import uuid from 'react-native-uuid';
+import DmlCommandAggregator from "./aggregators/DmlCommandAggregator";
+import locationRepository from "./LocationRepository";
+import LocationRepository from "./LocationRepository";
 
 class BillRepository extends BaseRepository<Bill> {
 
     public static billRepositoryName: string = 'BillRepository';
 
-    constructor(executor: CommandExecutor) {
+    private locationRepository: LocationRepository;
+
+
+    constructor(executor: CommandExecutor, locationRepository: LocationRepository) {
         super(executor);
+        this.locationRepository = locationRepository;
     }
 
     public async createTable(): Promise<void> {
@@ -41,12 +48,24 @@ class BillRepository extends BaseRepository<Bill> {
     }
 
     public async addAllRelations(): Promise<void> {
+        await this.addActivityRelation();
+        await this.addLocationRelation();
+    }
+
+    private async addLocationRelation() {
+        const alterTableCommand: AlterTable = new AlterTable()
+            .tableName(BillConstant.TABLE_NAME)
+            .column(BillConstant.F_LOCATION_ID, ColumnType.TEXT)
+            .foreignKey(LocationConstant.TABLE_NAME);
+        await this.executeDdlCommand(alterTableCommand);
+    }
+
+    public async addActivityRelation() {
         const alterTableCommand: AlterTable = new AlterTable()
             .tableName(BillConstant.TABLE_NAME)
             .column(BillConstant.F_ACTIVITY_ID, ColumnType.TEXT)
             .foreignKey(ActivityConstant.TABLE_NAME)
-            .column(BillConstant.F_LOCATION_ID, ColumnType.TEXT)
-            .foreignKey(LocationConstant.TABLE_NAME);
+
         await this.executeDdlCommand(alterTableCommand);
     }
 
@@ -57,13 +76,14 @@ class BillRepository extends BaseRepository<Bill> {
     }
 
     private makeMandatoryFieldsBuilder(bill: Bill): DmlBuilder {
-        let uuid: string = generateUuid();
+        let uuidValue = uuid.v4();
         return new InsertInto()
             .tableName(BillConstant.TABLE_NAME)
-            .column(BillConstant.C_BILL_ID, uuid)
+            .column(BillConstant.C_BILL_ID, uuidValue)
             .column(BillConstant.C_BILL_NAME, bill.billName)
             .column(BillConstant.C_BILL_DATE, bill.billDate.getTime())
-            .column(BillConstant.C_INSERT_TIME, new Date().getTime());
+            .column(BillConstant.C_INSERT_TIME, new Date().getTime())
+            .column(BillConstant.C_BILL_AMOUNT, bill.billAmount);
     }
 
     public persistByParent(bill: Bill): DmlBuilder {
@@ -86,7 +106,6 @@ class BillRepository extends BaseRepository<Bill> {
                 })();
             } catch (e) {
                 console.error(e);
-                return null;
             }
             if (foundBill != null) {
                 return new UpdateTable().tableName(BillConstant.TABLE_NAME)
@@ -101,6 +120,9 @@ class BillRepository extends BaseRepository<Bill> {
         let dmlBuilder: DmlBuilder = this
             .makeMandatoryFieldsBuilder(bill)
             .column(BillConstant.F_ACTIVITY_ID, bill.activity?.activityId);
+        if (bill.location != null) {
+            dmlBuilder = await this.handleLocation(bill, dmlBuilder);
+        }
         return await this.executeDmlCommand(dmlBuilder);
     }
 
@@ -148,6 +170,30 @@ class BillRepository extends BaseRepository<Bill> {
                 .where(BillConstant.F_ACTIVITY_ID, activityId);
 
         return await this.executeDqlCommand(commandBuilder);
+    }
+
+    async update(bill: Bill) {
+        let updateBillTable: DmlBuilder = new UpdateTable()
+            .tableName(BillConstant.TABLE_NAME)
+            .column(BillConstant.C_BILL_AMOUNT, bill.billAmount)
+            .column(BillConstant.C_BILL_NAME, bill.billName)
+            .column(BillConstant.C_BILL_DATE, bill.billDate)
+            .column(BillConstant.C_DESCRIPTION, bill.description)
+            .where(BillConstant.C_BILL_ID, bill.billId);
+
+        updateBillTable = await this.handleLocation(bill, updateBillTable);
+        return await this.executeDmlCommand(updateBillTable);
+    }
+
+    private async handleLocation(bill: Bill, dmlBuilder: DmlBuilder): Promise<DmlBuilder> {
+        if (bill.location != null) {
+            await this.locationRepository.insert(bill.location);
+            let foundLocation = await this.locationRepository.findByLatitudeAndLongitude(bill.location.latitude, bill.location.longitude);
+            if (foundLocation != null) {
+                dmlBuilder.column(BillConstant.F_LOCATION_ID, foundLocation.locationId);
+            }
+        }
+        return dmlBuilder;
     }
 }
 

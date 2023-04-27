@@ -1,5 +1,6 @@
 import DdlBuilder from "./DdlBuilder";
-import {ColumnDefinition, ColumnType} from "./ColumnDefinition";
+import {ColumnDefinition} from "./ColumnDefinition";
+import {ColumnType} from "../ColumnType";
 
 export default class AlterTable extends DdlBuilder {
 
@@ -65,7 +66,6 @@ export default class AlterTable extends DdlBuilder {
 
     build(): string {
         let sql = `ALTER TABLE ${this._tableName}\n`;
-
         for (let i = 0; i < this.columns.length; i++) {
             const column = this.columns[i];
             sql += `  ADD COLUMN ${column.name} ${column.type}`;
@@ -100,7 +100,7 @@ export default class AlterTable extends DdlBuilder {
             }
         }
 
-        sql += `;\n`;
+        // sql += `;\n`;
 
         return sql;
     }

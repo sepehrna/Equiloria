@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import React from 'react';
 import {StyleSheet, ScrollView} from 'react-native';
 import {colors} from 'react-native-elements';
@@ -10,7 +11,6 @@ import {useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {fetchAllBills} from "../../controller/ActionServiceController";
-
 
 const Main: React.FC = () => {
 
@@ -27,15 +27,20 @@ const Main: React.FC = () => {
     dispatch(create(activityList));
     const billItemLoader: () => GroupedListItem[] = () => {
         let result: GroupedListItem[] = [];
-        // fetchAllBills()
-        //     .then(bills => bills.forEach(bill => result.push({id: bill.id, value: bill.value})));
-        return [{id: '1', value: 'London'}
-            , {id: '2', value: 'LondonTour'}]
+        fetchAllBills()
+            .then(bills => bills.forEach(bill => result.push({id: bill.id, value: bill.value})));
+        console.info('Bills load result: ', result);
+        return result;
     };
 
     const activityItemLoader: () => GroupedListItem[] = () => {
         return [{id: '1', value: 'London'}
             , {id: '2', value: 'LondonTour'}];
+    }
+
+    function navigateToBillDetail(billId: string) {
+        let inFunctionNavigator = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
+        inFunctionNavigator.navigate('BillDetail', {billId: billId})
     }
 
     return (
@@ -45,14 +50,15 @@ const Main: React.FC = () => {
             <GroupedList listId={billList}
                          listTitle={'Bills'}
                          indicatorColor='#3374FF'
+                         // itemButtonDestination={navigateToBillDetail}
                          extenderButtonName={'Add bill'}
                          extenderButtonFunction={navigateToAddBill}
-                         items={billItemLoader()}/>
+                         itemList={billItemLoader()}/>
             <GroupedList listId={activityList}
                          listTitle={'Activities'}
                          extenderButtonName={'Add activity'}
                          indicatorColor='#FF4833'
-                         items={activityItemLoader()}
+                         itemList={activityItemLoader()}
                          extenderButtonFunction={navigateToAddBill}/>
         </ScrollView>
     );

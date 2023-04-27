@@ -1,7 +1,7 @@
 import {Entity} from "./Entity";
 import {Activity, ActivityBuilder} from "./Activity";
 import {Expose, Transform, Type} from "class-transformer";
-import Location, {LocationBuilder} from "./Location";
+import {Location, LocationBuilder} from "./Location";
 
 export module BillConstant {
     export const TABLE_NAME: string = 't_bills';
@@ -19,7 +19,7 @@ export class Bill implements Entity {
 
     private _billId: string;
     private _billName: string;
-    private _billAmount: number | null;
+    private _billAmount: number;
     private _billDate: Date;
     private _insertTime: Date;
     private _location: Location | null;
@@ -48,7 +48,7 @@ export class Bill implements Entity {
     }
 
     @Expose({name: BillConstant.C_BILL_AMOUNT})
-    get billAmount(): number | null {
+    get billAmount(): number {
         return this._billAmount;
     }
 
@@ -98,7 +98,7 @@ export class Bill implements Entity {
         this._billName = value;
     }
 
-    set billAmount(value: number | null) {
+    set billAmount(value: number) {
         this._billAmount = value;
     }
 
@@ -121,6 +121,7 @@ export class Bill implements Entity {
 
 export class BillBuilder {
     private readonly bill: Bill;
+
     constructor() {
         this.bill = new Bill();
     }
@@ -150,7 +151,7 @@ export class BillBuilder {
         return this;
     }
 
-    location(location: Location): BillBuilder {
+    location(location: Location | null): BillBuilder {
         this.bill.location = location;
         return this;
     }

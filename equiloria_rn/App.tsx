@@ -1,23 +1,26 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import {createStackNavigator} from '@react-navigation/stack';
-import {StyleSheet, View} from "react-native";
+import {Platform, StyleSheet, View} from "react-native";
 import {Provider} from "react-redux";
 import {store} from "./src/view/redux/store";
 import ApplicationNavigationContainer from "./src/view/routers/ApplicationNavigationContainer";
 import {ConnectionStatusProvider} from "./src/view/components/ConnectionStatusContext";
 import KeyboardHandler from "./src/view/components/KeyboardHandler";
+import {initSystem} from "./src/controller/ioc/SystemConfigurationController";
 
 createStackNavigator();
 SplashScreen.preventAutoHideAsync().catch((reason) => {
     console.warn(reason);
 });
 export default function App() {
-    const [appIsReady, setAppIsReady] = useState(false);
+    const [appIsReady, setAppIsReady] = useState<boolean>(false);
 
     async function prepare(): Promise<void> {
         try {
-            // await initSystem(Platform.OS);
+            if (!appIsReady) {
+                await initSystem(Platform.OS);
+            }
         } catch (e) {
             console.warn(e);
         } finally {
@@ -28,6 +31,7 @@ export default function App() {
     useEffect(() => {
         prepare();
     }, []);
+
 
     const onLayoutRootView = useCallback(async () => {
         if (appIsReady) {

@@ -4,7 +4,9 @@ import DdlBuilder from "../command-builders/ddl/DdlBuilder";
 import {DqlBuilder} from "../command-builders/dql/DqlBuilder";
 import {Entity} from "../../entities/Entity";
 
-export const commandExecutorName: string = 'CommandExecutor';
+export module CommandExecutorDefinition {
+    export const COMMAND_EXECUTOR_NAME: string = 'CommandExecutor';
+}
 export default interface CommandExecutor {
 
     execute(commandBuilder: CommandBuilder): Promise<any>;

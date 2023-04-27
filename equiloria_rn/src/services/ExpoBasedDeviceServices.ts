@@ -1,4 +1,4 @@
-import IDeviceServices from "./IDeviceServices";
+import {IDeviceServices} from "./IDeviceServices";
 import * as Network from "expo-network";
 import {initialNetStatus, NetStatus} from "../common/types/NetStatus";
 import {initialLocationCoordinates, LocationCoordinates} from "../common/types/LocationCoordinates";
@@ -6,6 +6,7 @@ import * as Location from 'expo-location';
 
 
 export default class ExpoBasedDeviceServices implements IDeviceServices {
+
     async checkInternetConnection(): Promise<NetStatus> {
         try {
             const networkState = await Network.getNetworkStateAsync();

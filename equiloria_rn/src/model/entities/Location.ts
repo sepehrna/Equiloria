@@ -1,4 +1,5 @@
 import {Expose, Type} from "class-transformer";
+import {Entity} from "./Entity";
 
 export module LocationConstant {
     export const TABLE_NAME: string = 't_locations';
@@ -8,7 +9,7 @@ export module LocationConstant {
     export const C_INSERT_TIME: string = 'c_insert_time';
 
 }
-export default class Location {
+export class Location implements Entity {
 
     private _locationId: string;
     private _latitude: number;

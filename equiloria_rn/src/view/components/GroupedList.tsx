@@ -4,6 +4,9 @@ import {Pressable, StyleSheet, View} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import {AppDispatch, RootState} from "../redux/store";
 import {load} from "../redux/GroupedListSlicer";
+import {useNavigation} from "@react-navigation/native";
+import {NativeStackNavigationProp} from "@react-navigation/native-stack";
+import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 
 interface GroupedListItem {
     id: string;
@@ -15,8 +18,8 @@ interface GroupedListProps {
 
     listId: string;
     listTitle: string;
-    items: GroupedListItem[] | [];
-    // items: GroupedListItem[];
+    itemList: GroupedListItem[];
+    itemButtonDestination?: string;
     indicatorColor?: string;
     extenderButtonName: string;
     extenderButtonFunction: () => void | undefined;
@@ -27,26 +30,30 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
     let listId = props.listId;
     const items = useSelector((state: RootState) => state.groupList.lists[listId]);
     const dispatch = useDispatch<AppDispatch>();
-
-    const handleLoadItems = () => {
-        dispatch(load({listId, items: props.items}));
+    const handleLoadItems = async () => {
+        dispatch(load({listId, items: props.itemList}));
     };
 
     function generateListItems() {
-        console.log(items);
         return items.map((item: GroupedListItem, index) => {
             return (
-                <ListItem key={index}
-                          bottomDivider
-                          containerStyle={index === 0
-                              ? styles.topElementContainerStyle : undefined}>
-                    <Icon style={styles.extenderIcon} name='square' type='font-awesome'
-                          color={props.indicatorColor}/>
-                    <ListItem.Content>
-                        <ListItem.Title>{item.value}</ListItem.Title>
-                    </ListItem.Content>
-                    <Icon name='chevron-right' type='font-awesome' color={colors.grey3}/>
-                </ListItem>
+                // <Pressable key={index}
+                //            onPress={() => {
+                //                if (props.itemButtonDestination != undefined) {
+                //                    navigate(item.id);
+                //                }
+                //            }}>
+                    <ListItem bottomDivider
+                              containerStyle={index === 0
+                                  ? styles.topElementContainerStyle : undefined}>
+                        <Icon style={styles.extenderIcon} name='square' type='font-awesome'
+                              color={props.indicatorColor}/>
+                        <ListItem.Content>
+                            <ListItem.Title>{item.value}</ListItem.Title>
+                        </ListItem.Content>
+                        <Icon name='chevron-right' type='font-awesome' color={colors.grey3}/>
+                    </ListItem>
+                // </Pressable>
             );
         });
     }

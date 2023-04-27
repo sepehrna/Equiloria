@@ -5,12 +5,13 @@ import React from "react";
 import {createStackNavigator} from "@react-navigation/stack";
 import BillDetail from "../screens/BillDetail";
 import Scanner from "../screens/Scanner";
+import {SecondMain} from "../screens/SecondMain";
 
 type RootStackParamList = {
-    Main: undefined;
+    SecondMain: undefined;
     NewBill: undefined;
     Scanner: { billName: string }
-    BillDetail: { billName: string, totalAmount: number };
+    BillDetail: { billName?: string, billId?: string, totalAmount?: number };
 };
 
 const stackNavigator = createStackNavigator<RootStackParamList>();
@@ -19,8 +20,8 @@ const ApplicationNavigationContainer: React.FC = () => {
         <NavigationContainer>
             <stackNavigator.Navigator>
                 <stackNavigator.Screen
-                    name="Main"
-                    component={Main}
+                    name="SecondMain"
+                    component={SecondMain}
                     options={{
                         headerTitle: 'Equiloria',
                     }}

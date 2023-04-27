@@ -21,19 +21,19 @@ export class Event implements Entity {
         this._userAction = null;
     }
 
-    @Expose({name: EventConstant.C_EVENT_ID})
+    // @Expose({name: EventConstant.C_EVENT_ID})
     get eventId(): string {
         return this._eventId;
     }
 
-    @Expose({name: EventConstant.C_INSERT_TIME})
-    @Type(() => Date)
+    // @Expose({name: EventConstant.C_INSERT_TIME})
+    // @Type(() => Date)
     get insertTime(): Date {
         return this._insertTime;
     }
 
-    @Expose({name: EventConstant.F_USER_ACTION_ID})
-    @Type(() => ActionObject)
+    // @Expose({name: EventConstant.F_USER_ACTION_ID})
+    // @Type(() => ActionObject)
     get userAction(): UserAction | null {
         return this._userAction;
     }

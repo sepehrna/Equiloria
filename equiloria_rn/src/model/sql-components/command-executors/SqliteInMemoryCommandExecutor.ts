@@ -10,22 +10,19 @@ import {plainToInstance} from "class-transformer";
 import {ClassConstructor} from "class-transformer/types/interfaces";
 
 export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
-    private static instance: SqliteInMemoryCommandExecutor;
-    private database: SQLite.WebSQLDatabase | null = null;
+    private _database: SQLite.WebSQLDatabase | null = null;
+    private readonly _dbName: string;
 
-    public static getInstance(): SqliteInMemoryCommandExecutor {
-        if (!SqliteInMemoryCommandExecutor.instance) {
-            SqliteInMemoryCommandExecutor.instance = new SqliteInMemoryCommandExecutor();
-        }
-        return SqliteInMemoryCommandExecutor.instance;
+    constructor(dbName: string) {
+        this._dbName = dbName;
     }
 
-    public open(): SQLite.WebSQLDatabase {
-        if (this.database) {
-            return this.database;
+    private open(): SQLite.WebSQLDatabase {
+        if (this._database) {
+            return this._database;
         }
-        this.database = SQLite.openDatabase("eq_memory.db");
-        return this.database;
+        this._database = SQLite.openDatabase(this._dbName);
+        return this._database;
     }
 
     public async execute(commandBuilder: CommandBuilder): Promise<any> {
@@ -50,12 +47,13 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
             db.readTransaction(
                 (tx) => {
                     let sqlStatement = commandBuilder.build();
-                    console.debug(sqlStatement)
+                    console.info(sqlStatement);
                     tx.executeSql(
                         sqlStatement
                         , []
                         , (_, resultSet) => {
                             let eConstructor: ClassConstructor<E> = commandBuilder.entityInstance.constructor as ClassConstructor<E>;
+                            console.info('Result set: ',resultSet);
                             let activities = this.resultSetToObjects(resultSet, eConstructor);
                             resolve(activities);
                         }
@@ -77,25 +75,29 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
                 (tx) => {
                     commandBuilders.forEach(commandBuilder => {
                             let sqlStatement = commandBuilder.build();
-                            console.debug(sqlStatement);
+                            console.info(sqlStatement);
                             tx.executeSql(
                                 sqlStatement
                                 , []
-                                , (_, resultSet) => resolve(resultSet), (_, error) => {
+                                , (_, resultSet) => {
+                                    console.info(resultSet);
+                                    resolve(resultSet);
+                                }, (_, error) => {
                                     reject(error);
+                                    console.error(error);
                                     return false;
                                 }
                             )
                         }
                     );
                 }
-                , (error) => reject(error)
-            );
+                , (error) => reject(error));
         });
     }
 
     private resultSetToObjects<T>(resultSet: SQLResultSet, objectType: new () => T): T[] {
         const rows = resultSet.rows;
+        console.info('Fetched rows to convert: ',rows);
         const objects: T[] = [];
 
         for (let i = 0; i < rows.length; i++) {

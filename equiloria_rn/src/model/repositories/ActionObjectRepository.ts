@@ -10,10 +10,12 @@ import {ActionObject, ActionObjectConstant} from "../entities/ActionObject";
 import DmlBuilder from "../sql-components/command-builders/dml/DmlBuilder";
 import {InsertInto} from "../sql-components/command-builders/dml/InsertInto";
 import {v4 as generateUuid} from "uuid";
+import {BillConstant} from "../entities/Bill";
 
 
 export default class ActionObjectRepository extends BaseRepository<ActionObject> {
     public static actionObjectRepositoryName: string = 'ActionObjectRepository';
+
     constructor(executor: CommandExecutor) {
         super(executor);
     }
@@ -29,14 +31,24 @@ export default class ActionObjectRepository extends BaseRepository<ActionObject>
     }
 
     public async addAllRelations(): Promise<void> {
+        await this.addActivityRelation();
+        await this.addBillRelation();
+    }
+
+    private async addActivityRelation() {
         const alterTableCommand: AlterTable = new AlterTable()
             .tableName(ActionObjectConstant.TABLE_NAME)
             .column(ActionObjectConstant.F_ACTIVITY_ID, ColumnType.TEXT)
-            .foreignKey(ActivityConstant.TABLE_NAME)
-            .column(ActionObjectConstant.F_BILL_ID, ColumnType.TEXT)
-            .foreignKey(ActionObjectConstant.TABLE_NAME);
+            .foreignKey(ActivityConstant.TABLE_NAME);
         await this.executeDdlCommand(alterTableCommand);
+    }
 
+    private async addBillRelation() {
+        const alterTableCommand: AlterTable = new AlterTable()
+            .tableName(ActionObjectConstant.TABLE_NAME)
+            .column(ActionObjectConstant.F_BILL_ID, ColumnType.TEXT)
+            .foreignKey(BillConstant.TABLE_NAME);
+        await this.executeDdlCommand(alterTableCommand);
     }
 
     public async dropTable(): Promise<void> {

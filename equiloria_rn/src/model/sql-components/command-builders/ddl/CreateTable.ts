@@ -7,6 +7,7 @@ export default class CreateTable extends DdlBuilder {
     private readonly columns: ColumnDefinition[] = []
 
     public tableName(tableName: string): CreateTable {
+        console.info('table name');
         this._tableName = tableName;
         return this
     }

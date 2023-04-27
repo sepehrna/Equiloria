@@ -43,6 +43,10 @@ class ActivityRepository extends BaseRepository<Activity> {
     }
 
     public async addAllRelations(): Promise<void> {
+        await this.addConsumptionRelation();
+    }
+
+    private async addConsumptionRelation() {
         const alterTableCommand: AlterTable = new AlterTable()
             .tableName(ActivityConstant.TABLE_NAME)
             .column(ActivityConstant.F_CONSUMPTION_TYPE, ColumnType.TEXT)

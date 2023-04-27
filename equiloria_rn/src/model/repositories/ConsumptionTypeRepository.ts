@@ -1,7 +1,6 @@
 import {BaseRepository} from "./BaseRepository";
 import ConsumptionType, {ConsumptionTypeConstant} from "../entities/ConsumptionType";
 import CreateTable from "../sql-components/command-builders/ddl/CreateTable";
-import {BillConstant} from "../entities/Bill";
 import {ColumnType} from "../sql-components/command-builders/ColumnType";
 import DdlBuilder from "../sql-components/command-builders/ddl/DdlBuilder";
 import DropTable from "../sql-components/command-builders/ddl/DropTable";
@@ -22,7 +21,7 @@ class ConsumptionTypeRepository extends BaseRepository<ConsumptionType> {
             .column(ConsumptionTypeConstant.C_CONSUMPTION_TYPE_NAME, ColumnType.TEXT)
             .notNull()
             .column(ConsumptionTypeConstant.C_INSERT_TIME, ColumnType.INTEGER)
-            .notNull()
+            .notNull();
         await this.executeDdlCommand(createTableCommand);
     }
 

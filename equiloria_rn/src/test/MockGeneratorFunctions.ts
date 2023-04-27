@@ -5,7 +5,7 @@ import ActivityRepository from "../model/repositories/ActivityRepository";
 import BillRepository from "../model/repositories/BillRepository";
 
 export async function initializeDatabase() {
-    const executor = SqliteInMemoryCommandExecutor.getInstance();
+    const executor = new SqliteInMemoryCommandExecutor('equiloria_db');
     const billRepo = new BillRepository(executor);
     const activityRepo = new ActivityRepository(executor, billRepo);
 
@@ -18,7 +18,7 @@ export async function initializeDatabase() {
 
     // Create bills table
     await billRepo.createTable();
-    await billRepo.addAllRelations();
+    // await billRepo.addAllRelations();
 
     // Generate mock data
     const activity1 = new ActivityBuilder()

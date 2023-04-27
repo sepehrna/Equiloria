@@ -1,4 +1,4 @@
-import IActionService from "./IActionService";
+import IActionServices from "./IActionServices";
 import {Activity} from "../model/entities/Activity";
 import ActivityRepository from "../model/repositories/ActivityRepository";
 import BillRepository from "../model/repositories/BillRepository";
@@ -6,7 +6,7 @@ import {Bill} from "../model/entities/Bill";
 import BillValidator from "./BillValidator";
 import {ValidatorResponse} from "./IValidator";
 
-class ActionServices implements IActionService {
+class ActionServices implements IActionServices {
 
     private activityRepository: ActivityRepository;
     private billRepository: BillRepository;
@@ -31,11 +31,20 @@ class ActionServices implements IActionService {
         return this.billRepository.findAll();
     }
 
-    async registerNewBill(newBill: Bill): Promise<void> {
+    async registerNewBill(newBill: Bill): Promise<void | ValidatorResponse> {
         let validatorResponse: ValidatorResponse = this.billValidator.validateInsert(newBill);
         if (validatorResponse.validationResult) {
             return await this.billRepository.insert(newBill);
         }
+        return validatorResponse;
+    }
+
+    async updateBill(bill: Bill): Promise<void | ValidatorResponse> {
+        let validatorResponse: ValidatorResponse = this.billValidator.validateUpdate(bill);
+        if (validatorResponse.validationResult) {
+            return await this.billRepository.update(bill);
+        }
+        return validatorResponse;
     }
 
     getBillData(billId: string): Promise<Bill | null> {
