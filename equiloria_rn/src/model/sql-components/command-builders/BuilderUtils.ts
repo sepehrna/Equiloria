@@ -1,4 +1,5 @@
 import Condition from "./Condition";
+import {ColumnType} from "./ColumnType";
 
 export default class BuilderUtils {
 
@@ -12,7 +13,10 @@ export default class BuilderUtils {
             where = 'WHERE ';
             for (let i = 0; i < conditions.length; i++) {
                 const condition = conditions[i];
-                where += `${condition.column} = ${condition.value}`;
+                let statement = condition.columnType && condition.columnType === ColumnType.TEXT
+                    ? `${condition.column} = '${condition.value}'`
+                    : `${condition.column} = ${condition.value}`;
+                where += statement;
                 if (i < conditions.length - 1) {
                     where += ' AND '
                 }

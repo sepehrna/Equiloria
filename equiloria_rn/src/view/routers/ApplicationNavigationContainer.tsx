@@ -8,7 +8,7 @@ import Scanner from "../screens/Scanner";
 import {SecondMain} from "../screens/SecondMain";
 
 type RootStackParamList = {
-    SecondMain: undefined;
+    Main: undefined;
     NewBill: undefined;
     Scanner: { billName: string }
     BillDetail: { billName?: string, billId?: string, totalAmount?: number };
@@ -20,8 +20,8 @@ const ApplicationNavigationContainer: React.FC = () => {
         <NavigationContainer>
             <stackNavigator.Navigator>
                 <stackNavigator.Screen
-                    name="SecondMain"
-                    component={SecondMain}
+                    name="Main"
+                    component={Main}
                     options={{
                         headerTitle: 'Equiloria',
                     }}

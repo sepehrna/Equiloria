@@ -1,10 +1,11 @@
 import React from 'react';
-import {SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
+import {StyleSheet, Text, TextInput, View} from 'react-native';
 import ActionButton from "../components/ActionButton";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {preventingAlert, ValidationType} from "../utils/ValidationHelper";
+import {CustomFlatList} from "../components/CustomFlatList";
 
 const NewBill: React.FC = () => {
     const [billName, setBillName] = React.useState('');
@@ -26,8 +27,8 @@ const NewBill: React.FC = () => {
         }
     }
 
-    return (
-        <ScrollView contentContainerStyle={styles.container}>
+    function getNameInputContainer() {
+        return (
             <View style={styles.inputContainer}>
                 <Text style={styles.asterisk}>* Required</Text>
                 <TextInput
@@ -37,14 +38,23 @@ const NewBill: React.FC = () => {
                     placeholder="Enter bill name"
                 />
             </View>
-            <View style={styles.buttonContainer}>
-                <ActionButton text='Scan bill' onPress={navigateToScanner}/>
-                <ActionButton text='Enter manually'
-                              onPress={navigateToBillDetail}
-                              backgroundColor='black'
-                              pressedBackgroundColor='gray'/>
-            </View>
-        </ScrollView>
+        );
+    }
+
+    function getButtons() {
+        return <View style={styles.buttonContainer}>
+            <ActionButton text='Scan bill' onPress={navigateToScanner}/>
+            <ActionButton text='Enter manually'
+                          onPress={navigateToBillDetail}
+                          backgroundColor='black'
+                          pressedBackgroundColor='gray'/>
+        </View>;
+    }
+
+    return (
+        <CustomFlatList
+            items={[{componentId: '1', componentGenerator: getNameInputContainer}
+                , {componentId: '2', componentGenerator: getButtons}]}/>
     );
 };
 
@@ -56,7 +66,6 @@ const styles = StyleSheet.create({
     },
     inputContainer: {
         paddingHorizontal: 10,
-        width: '80%',
         paddingVertical: 4,
         borderRadius: 4,
         marginBottom: 24,
@@ -76,7 +85,6 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: 'column',
-        width: '80%',
         justifyContent: 'space-between',
     },
     button: {

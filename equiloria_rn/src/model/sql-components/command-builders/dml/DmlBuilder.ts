@@ -2,6 +2,7 @@ import Condition from "../Condition";
 import CommandBuilder from "../CommandBuilder";
 import BuilderUtils from "../BuilderUtils";
 import Column from "../Column";
+import {ColumnType} from "../ColumnType";
 
 export default abstract class DmlBuilder implements CommandBuilder {
     protected _tableName: string;
@@ -22,12 +23,26 @@ export default abstract class DmlBuilder implements CommandBuilder {
     }
 
     public column(column: string, value: any): DmlBuilder {
-        this.columns.push({column, value});
+        if (value) {
+            if (typeof value === 'string') {
+                let finalValue: string = `'${value}'`;
+                this.columns.push({column, value: finalValue});
+            } else {
+                this.columns.push({column, value});
+            }
+        }
         return this;
     }
 
     public where(column: string, value: any): DmlBuilder {
-        this.conditions.push({column, value});
+        if (value) {
+            if (typeof value === 'string') {
+                let textColumnType = ColumnType.TEXT;
+                this.conditions.push({column, value, columnType: textColumnType});
+            } else {
+                this.conditions.push({column, value});
+            }
+        }
         return this;
     }
 

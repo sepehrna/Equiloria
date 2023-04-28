@@ -1,5 +1,5 @@
 import React, {ReactNode, useEffect, useState} from 'react';
-import {FlatList, Pressable, StyleSheet, TextInput, View} from 'react-native';
+import {Pressable, StyleSheet, TextInput, View} from 'react-native';
 import {Text} from 'react-native-elements';
 import ActionButton from "../components/ActionButton";
 import {RouteProp, useNavigation} from "@react-navigation/native";
@@ -9,12 +9,12 @@ import {useDispatch} from "react-redux";
 import {AppDispatch} from "../redux/store";
 import {create} from "../redux/HandledPickerSlice";
 import {getDeviceLocation, getLocationAccessPermission} from "../../controller/DeviceServicesController";
-import {SafeAreaView} from "react-native-safe-area-context";
 import {fetchBill, registerNewBill, updateBill} from "../../controller/ActionServiceController";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {preventingAlert, ValidationType} from "../utils/ValidationHelper";
 import {initialLocationCoordinates, LocationCoordinates} from "../../common/types/LocationCoordinates";
 import {Bill} from "../../model/entities/Bill";
+import {CustomFlatList} from "../components/CustomFlatList";
 
 type BillDetailsRouteProp = RouteProp<RootStackParamList, 'BillDetail'>;
 type BillDetailScreenProps = {
@@ -41,7 +41,9 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
             let bill: Bill | null = await fetchBill(route.params.billId);
             if (bill != null) {
                 setBillName(bill?.billName);
-                setAmount(bill.billAmount.toFixed(2));
+                let numberBillAmount: number = +bill.billAmount;
+                let billAmount: string = numberBillAmount.toFixed(2)
+                setAmount(billAmount);
                 if (bill.description != null) {
                     setDescription(bill.description);
                 }
@@ -57,7 +59,6 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         }
         dispatch(create('activityList'));
     }
-
     useEffect(() => {
         init();
     }, [])
@@ -87,16 +88,16 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         navigation.navigate('Main');
     }
 
-    async function register() {
+    async function register(finalAmount: string) {
         let locationCoordinates: LocationCoordinates = initialLocationCoordinates;
         if (locationAccessStatus != null && locationAccessStatus) {
             locationCoordinates = await getDeviceLocation(true);
         }
-        await registerNewBill(billName, +amount, description, locationCoordinates.latitude, locationCoordinates.longitude);
+        await registerNewBill(billName, +finalAmount, description, locationCoordinates.latitude, locationCoordinates.longitude);
         navigateToMain();
     }
 
-    function calculateTipAmount() {
+    function calculateTipAmount(): string {
         let finalAmount: number = 0;
         if (tipPercentage === 10) {
             finalAmount = +amount + ((+amount * 10) / 100);
@@ -106,18 +107,19 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         } else if (tipAmount !== '') {
             finalAmount = +amount + +tipAmount;
         }
-        setAmount(finalAmount.toFixed(0));
+        return finalAmount.toFixed(0);
     }
 
     async function submit(): Promise<void> {
         await getLocationPermission();
-        if (amount != null && amount !== '' && amount !== '0') {
-            calculateTipAmount();
+        if (amount != null && amount !== '' && amount !== '0.00') {
+            let finalAmount: string = calculateTipAmount();
             if (isUpdate) {
-                await updateBill(route.params.billId, +amount, description);
+                await updateBill(route.params.billId, +finalAmount, description);
             } else {
-                await register();
+                await register(finalAmount);
             }
+            navigateToMain();
         } else {
             preventingAlert('Amount', ValidationType.EMPTY)
         }
@@ -187,7 +189,7 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
                         setTipAmount(text);
                         setTipPercentage(0);
                     }}
-                    placeholder="Enter tip"
+                    placeholder="Enter tip amount"
                     keyboardType="numeric"
                 />
             </View>
@@ -202,7 +204,7 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
                     style={styles.input}
                     value={description}
                     onChangeText={setDescription}
-                    placeholder="Description"
+                    placeholder="Enter your description"
                     multiline
                 />
             </View>
@@ -210,21 +212,15 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
     }
 
     function getButtonContainer() {
-        return <>
-            <ActionButton text='Done' onPress={submit}/>
-        </>;
+        return (
+            <>
+                <ActionButton text='Done' onPress={submit}/>
+            </>
+        );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <FlatList
-                data={mainFlatListData}
-                renderItem={(item) => <View
-                    style={styles.componentContainer}>{item.item.componentGenerator()}</View>}
-                keyExtractor={item => item.componentId}
-                scrollEnabled={true}
-            />
-        </SafeAreaView>
+        <CustomFlatList items={mainFlatListData}/>
     );
 };
 

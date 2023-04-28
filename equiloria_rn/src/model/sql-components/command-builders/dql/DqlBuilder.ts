@@ -3,6 +3,7 @@ import Condition from "../Condition";
 import BuilderUtils from "../BuilderUtils";
 import OrderBy, {Direction} from "../OrderBy";
 import {Entity} from "../../../entities/Entity";
+import {ColumnType} from "../ColumnType";
 
 export class DqlBuilder<E extends Entity> implements CommandBuilder {
     private query: string;
@@ -38,7 +39,12 @@ export class DqlBuilder<E extends Entity> implements CommandBuilder {
     }
 
     where(column: string, value: any): DqlBuilder<E> {
-        this.conditions.push({column, value})
+        if (typeof value === 'string') {
+            let textType: ColumnType = ColumnType.TEXT;
+            this.conditions.push({column, value, columnType: textType})
+        } else {
+            this.conditions.push({column, value})
+        }
         return this;
     }
 

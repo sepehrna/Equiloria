@@ -16,16 +16,16 @@ type MainScreenComponentFlatListItemProps = {
 }
 export const SecondMain: React.FC = () => {
 
-    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'SecondMain'>>();
+    // const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'SecondMain'>>();
     const [bills, setBills] = useState<LoaderResponse[]>([]);
 
-    const billItemLoader: () => LoaderResponse[] = () => {
+    /*const billItemLoader: () => LoaderResponse[] = () => {
         let result: LoaderResponse[] = [];
         fetchAllBills()
             .then(bills => bills.forEach(bill => result.push({id: bill.id, value: bill.value})));
         console.info('Bills load result: ', result);
         return result;
-    };
+    };*/
 
     function getAvatar() {
         return (
@@ -35,47 +35,58 @@ export const SecondMain: React.FC = () => {
     }
 
     function generateBills() {
-        return bills.map((bill: GroupedListItem, index) => {
+        return bills.map((bill: LoaderResponse, index) => {
             return (
-                <View style={styles.groupedLists}>
-                    <Pressable key={index}
-                               onPress={() => navigation.navigate('BillDetail', {billId: bill.id})}>
-                        <ListItem bottomDivider
-                                  containerStyle={index === 0
-                                      ? styles.topElementContainerStyle : undefined}>
-                            <Icon style={styles.extenderIcon} name='square' type='font-awesome'
-                                  color={'#3374FF'}/>
-                            <ListItem.Content>
-                                <ListItem.Title>{bill.value}</ListItem.Title>
-                            </ListItem.Content>
-                            <Icon name='chevron-right' type='font-awesome' color={colors.grey3}/>
-                        </ListItem>
-                    </Pressable>
-                    <Pressable>
-                        <ListItem key={'add'}
-                                  containerStyle={[styles.bottomElementContainerStyle, styles.buttonContainerStyle]}>
-                            <Icon style={styles.extenderIcon} name='plus' type='font-awesome'
-                                  color={'#3374FF'}/>
-                            <ListItem.Content>
-                                <ListItem.Title>Add bill</ListItem.Title>
-                            </ListItem.Content>
-                            <Icon name='chevron-right' type='font-awesome' color={colors.grey3}/>
-                        </ListItem>
-                    </Pressable>
-                </View>
+                <Pressable key={index}>
+                    <ListItem bottomDivider
+                              containerStyle={index === 0
+                                  ? styles.topElementContainerStyle : undefined}>
+                        <Icon style={styles.extenderIcon} name='square' type='font-awesome'
+                              color={'#3374FF'}/>
+                        <ListItem.Content>
+                            <ListItem.Title>{bill.value}</ListItem.Title>
+                        </ListItem.Content>
+                        <Icon name='chevron-right' type='font-awesome' color={colors.grey3}/>
+                    </ListItem>
+                </Pressable>
             );
         });
     }
 
+    function extenderButton() {
+        return (
+            <Pressable>
+                <ListItem key={'add'}
+                          containerStyle={[styles.bottomElementContainerStyle, styles.buttonContainerStyle]}>
+                    <Icon style={styles.extenderIcon} name='plus' type='font-awesome'
+                          color={'#3374FF'}/>
+                    <ListItem.Content>
+                        <ListItem.Title>Add bill</ListItem.Title>
+                    </ListItem.Content>
+                    <Icon name='chevron-right' type='font-awesome' color={colors.grey3}/>
+                </ListItem>
+            </Pressable>
+        )
+    }
+
+    function billList() {
+        return (
+            <View style={styles.groupedLists}>
+                {generateBills()}
+                {extenderButton()}
+            </View>
+        )
+    }
+
     const mainFlatListData = new Array<MainScreenComponentFlatListItemProps>();
     mainFlatListData.push({componentId: '1', componentGenerator: getAvatar});
-    mainFlatListData.push({componentId: '2', componentGenerator: generateBills});
+    // mainFlatListData.push({componentId: '2', componentGenerator: billList});
     // mainFlatListData.push({componentId: '3', componentGenerator: getActivityList});
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
                 onLayout={() => {
-                    setBills(billItemLoader());
+                    // setBills(billItemLoader());
                 }}
                 data={mainFlatListData}
                 renderItem={(item) => <View

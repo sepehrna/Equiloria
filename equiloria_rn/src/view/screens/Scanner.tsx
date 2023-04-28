@@ -1,14 +1,12 @@
-import React, {useState, useCallback , useRef, RefObject} from 'react';
-import {StyleSheet, View, Image, TextInput} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
+import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
 import {Camera} from 'expo-camera';
-import {RouteProp, useNavigation} from "@react-navigation/native";
+import {RouteProp, useFocusEffect, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import ActionButton from "../components/ActionButton";
-import {CameraCapturedPicture} from "expo-camera/src/Camera.types";
-import MlkitOcr from 'react-native-mlkit-ocr';
-import {MlkitOcrResult} from "react-native-mlkit-ocr/src";
-import { useFocusEffect } from '@react-navigation/native';
+import {CameraCapturedPicture, PermissionResponse} from "expo-camera/src/Camera.types";
+import {sendToGoogle} from "../../controller/ExternalServicesApi";
 
 
 type ScannerRouteProp = RouteProp<RootStackParamList, 'Scanner'>;
@@ -18,11 +16,12 @@ type ScannerScreenProps = {
 const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
 
     const billName: string = route.params.billName;
-    const cameraRef: RefObject<Camera> = useRef<Camera>(null);
+    const cameraRef = useRef<Camera | null>(null);
 
-    const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+    const [hasPermission, setHasPermission] = useState<boolean | null>(false);
     const [totalAmount, setTotalAmount] = useState<string>('');
-    const [photo, setPhoto] = useState<string | null>(null)
+    const [photo, setPhoto] = useState<string | null>(null);
+    const [cameraOn, setCameraOn] = useState<boolean>(true);
 
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Scanner'>>();
 
@@ -30,40 +29,41 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
         navigation.navigate('BillDetail', {billName: billName, totalAmount: +totalAmount});
     }
 
+    const requestCameraPermission = async () => {
+        let permissionResponse: PermissionResponse = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(permissionResponse.status === 'granted');
+    };
+
     useFocusEffect(
-        useCallback(() => {
-            const requestCameraPermission = async () => {
-                const { status } = await Camera.requestCameraPermissionsAsync();
-                setHasPermission(status === 'granted');
-            };
-
+        React.useCallback(() => {
             requestCameraPermission();
-
-            return () => {
-                if (cameraRef) {
-                    cameraRef.current?.pausePreview();
-                }
-            };
-        }, [cameraRef])
+        }, [])
     );
 
-    const recognizeText = async (imageUri: string | null) => {
-        const options = {
-            whitelist: '0123456789.,',
-        };
+    useEffect(() => {
+        return navigation.addListener('blur', () => {
+            setCameraOn(false);
+        });
+    }, [navigation]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            setCameraOn(true);
+        }, [navigation])
+    );
+
+    const recognizeText = async (imageUri: string | undefined) => {
         if (imageUri != null) {
-            console.info(imageUri);
             let recognizedTexts: string[] = [];
-            let recognizedTextsResult: MlkitOcrResult | null = null;
             try {
                 // recognizedTexts = await TextRecognition.recognize(imageUri, {
                 //     visionIgnoreThreshold: 0.5,
                 // });
-                recognizedTextsResult = await MlkitOcr.detectFromUri(imageUri);
+                console.info('................................');
+                await sendToGoogle(imageUri);
             } catch (e) {
                 console.error(e);
             }
-            console.info(recognizedTextsResult);
             // recognizedTexts.forEach(recognizedText => recognizedText.replace(/[^\d.-]/g, ''))
             // const amount = recognizedTexts.replace(/[^\d.-]/g, '');
             // setTotalAmount(amount);
@@ -71,17 +71,16 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
     };
 
     const captureImage = async () => {
-        console.info(cameraRef);
         if (cameraRef != null && cameraRef.current != null) {
             try {
-                const options = {quality: 1, base64: true, exif: false};
+                const options = {quality: 0.5, base64: true, exif: false};
                 const takenPicture: CameraCapturedPicture = await cameraRef.current.takePictureAsync(options);
+                await recognizeText(takenPicture.base64);
                 setPhoto(takenPicture.uri);
             } catch (e) {
                 console.error(e);
                 await captureImage();
             }
-            await recognizeText(photo);
         }
     };
 
@@ -101,11 +100,30 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
         />;
     }
 
+    function getCamera() {
+        console.info(hasPermission);
+        return !cameraOn
+            ? <View>
+                <Text>
+                    Camera is turned off!!! Don't worry you still can do it manually ;)
+                </Text>
+            </View>
+            : hasPermission
+                ?
+                <Camera style={defaultStyles.camera} ref={cameraRef}>
+                    <View style={defaultStyles.overlay}/>
+                </Camera>
+                :
+                <View>
+                    <Text>
+                        Equiloria is not permitted for using camera!!! Don't worry you still can do it manually ;)
+                    </Text>
+                </View>
+    }
+
     return (
         <View style={defaultStyles.container}>
-            <Camera style={defaultStyles.camera} ref={cameraRef}>
-                <View style={defaultStyles.overlay}/>
-            </Camera>
+            {getCamera()}
             <TextInput
                 style={defaultStyles.amountInput}
                 value={totalAmount}
@@ -119,7 +137,7 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
             </View>
         </View>
     );
-};
+}
 
 const defaultStyles = StyleSheet.create({
     container: {

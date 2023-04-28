@@ -1,12 +1,13 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {colors, Icon, ListItem} from "react-native-elements";
 import {Pressable, StyleSheet, View} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import {AppDispatch, RootState} from "../redux/store";
-import {load} from "../redux/GroupedListSlicer";
+import {create, load} from "../redux/GroupedListSlicer";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
+import {GestureResponderEvent} from "react-native/Libraries/Types/CoreEventTypes";
 
 interface GroupedListItem {
     id: string;
@@ -19,7 +20,7 @@ interface GroupedListProps {
     listId: string;
     listTitle: string;
     itemList: GroupedListItem[];
-    itemButtonDestination?: string;
+    itemNavigate?: (itemId: string) => void;
     indicatorColor?: string;
     extenderButtonName: string;
     extenderButtonFunction: () => void | undefined;
@@ -28,21 +29,24 @@ interface GroupedListProps {
 
 const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
     let listId = props.listId;
-    const items = useSelector((state: RootState) => state.groupList.lists[listId]);
+    // const items = useSelector((state: RootState) => state.groupList.lists[listId]);
     const dispatch = useDispatch<AppDispatch>();
+
+    // useEffect(() => {
+    //     dispatch(create(listId));
+    // }, [])
+    //
+    // useEffect(() => {
+    //     dispatch(load(items, ));
+    // }, [props.itemList])
     const handleLoadItems = async () => {
-        dispatch(load({listId, items: props.itemList}));
+
     };
 
     function generateListItems() {
-        return items.map((item: GroupedListItem, index) => {
+        return props.itemList.map((item: GroupedListItem, index) => {
             return (
-                // <Pressable key={index}
-                //            onPress={() => {
-                //                if (props.itemButtonDestination != undefined) {
-                //                    navigate(item.id);
-                //                }
-                //            }}>
+                <Pressable key={index} onPress={() => props.itemNavigate ? props.itemNavigate(item.id) : undefined}>
                     <ListItem bottomDivider
                               containerStyle={index === 0
                                   ? styles.topElementContainerStyle : undefined}>
@@ -53,7 +57,7 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
                         </ListItem.Content>
                         <Icon name='chevron-right' type='font-awesome' color={colors.grey3}/>
                     </ListItem>
-                // </Pressable>
+                </Pressable>
             );
         });
     }
@@ -74,7 +78,7 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
     }
 
     return (
-        <View style={styles.groupedLists} onLayout={handleLoadItems}>
+        <View style={styles.groupedLists}>
             {generateListItems()}
             {generateAddButton()}
         </View>
@@ -83,7 +87,8 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
 
 const styles = StyleSheet.create({
     groupedLists: {
-        marginTop: 16
+        marginTop: 10,
+        marginBottom: 10
     },
     listTitle: {
         fontSize: 20,
@@ -91,9 +96,9 @@ const styles = StyleSheet.create({
         marginBottom: 16
     },
     buttonContainerStyle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 16,
+        // fontSize: 20,
+        // fontWeight: 'bold',
+        // marginBottom: 16,
     },
     topElementContainerStyle: {
         borderTopLeftRadius: 20,

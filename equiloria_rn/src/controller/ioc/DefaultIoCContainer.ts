@@ -70,7 +70,7 @@ export class DefaultIoCContainer implements IIoCContainer {
         let eventRepository: EventRepository = new EventRepository(sqliteInMemoryCommandExecutor, userActionRepository);
         this.register(EventRepository.eventRepositoryName, eventRepository);
 
-        let billRepository: BillRepository = new BillRepository(sqliteInMemoryCommandExecutor);
+        let billRepository: BillRepository = new BillRepository(sqliteInMemoryCommandExecutor, locationRepository);
         this.register(BillRepository.billRepositoryName, billRepository);
 
         let activityRepository: activityRepository = new ActivityRepository(sqliteInMemoryCommandExecutor, billRepository);

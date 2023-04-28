@@ -158,7 +158,6 @@ class BillRepository extends BaseRepository<Bill> {
                 .where(BillConstant.C_BILL_ID, id);
 
         let bills: Bill[] = await this.executeDqlCommand(commandBuilder);
-
         return bills.length === 1 ? bills[0] : null;
     }
 
@@ -177,12 +176,16 @@ class BillRepository extends BaseRepository<Bill> {
             .tableName(BillConstant.TABLE_NAME)
             .column(BillConstant.C_BILL_AMOUNT, bill.billAmount)
             .column(BillConstant.C_BILL_NAME, bill.billName)
-            .column(BillConstant.C_BILL_DATE, bill.billDate)
+            .column(BillConstant.C_BILL_DATE, bill.billDate.getTime())
             .column(BillConstant.C_DESCRIPTION, bill.description)
             .where(BillConstant.C_BILL_ID, bill.billId);
 
+        console.info('Prepare update command');
         updateBillTable = await this.handleLocation(bill, updateBillTable);
-        return await this.executeDmlCommand(updateBillTable);
+        console.info('Prepare update command after location');
+        let newVar = await this.executeDmlCommand(updateBillTable);
+        console.info('After command');
+        return newVar;
     }
 
     private async handleLocation(bill: Bill, dmlBuilder: DmlBuilder): Promise<DmlBuilder> {

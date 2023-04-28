@@ -51,11 +51,9 @@ export default function App() {
     return (
         <Provider store={store}>
             <ConnectionStatusProvider>
-                <KeyboardHandler style={{flex: 1}}>
-                    <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
-                        <ApplicationNavigationContainer/>
-                    </View>
-                </KeyboardHandler>
+                <View style={styles.applicationContainer} onLayout={onLayoutRootView}>
+                    <ApplicationNavigationContainer/>
+                </View>
             </ConnectionStatusProvider>
         </Provider>
     );

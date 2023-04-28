@@ -53,11 +53,12 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
                         , []
                         , (_, resultSet) => {
                             let eConstructor: ClassConstructor<E> = commandBuilder.entityInstance.constructor as ClassConstructor<E>;
-                            console.info('Result set: ',resultSet);
+                            console.info('Result set: ', resultSet);
                             let activities = this.resultSetToObjects(resultSet, eConstructor);
                             resolve(activities);
                         }
                         , (_, error) => {
+                            console.info('Command error ', error);
                             reject(error);
                             return true;
                         }
@@ -97,7 +98,7 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
 
     private resultSetToObjects<T>(resultSet: SQLResultSet, objectType: new () => T): T[] {
         const rows = resultSet.rows;
-        console.info('Fetched rows to convert: ',rows);
+        console.info('Fetched rows to convert: ', rows);
         const objects: T[] = [];
 
         for (let i = 0; i < rows.length; i++) {
