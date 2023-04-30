@@ -4,8 +4,27 @@ import ContainerProvider from "./ioc/ContainerProvider";
 import {LoaderResponse} from "../common/types/LoaderResponse";
 import ACTION_SERVICE_NAME = IActionServiceServiceDefinition.ACTION_SERVICE_NAME;
 import {Location, LocationBuilder} from "../model/entities/Location";
+import {Activity, ActivityBuilder} from "../model/entities/Activity";
 
-async function registerNewBill(billName: string, billAmount: number, description: string | null, latitude: number | null, longitude: number | null) {
+async function fetchAllActivities(): Promise<LoaderResponse[]> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let result: LoaderResponse[] = [];
+    let activities: Activity[] = await actionService.fetchAllActivities();
+    activities.forEach(activity => {
+        result.push({id: activity.activityId, value: activity.activityName})
+    });
+    return result;
+}
+
+async function registerNewActivity(activityName: string, description: string | null): Promise<void> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let activity: Activity = new ActivityBuilder()
+        .activityName(activityName)
+        .build();
+    await actionService.registerNewActivity(activity);
+}
+
+async function registerNewBill(billName: string, billAmount: number, activityId: string | null, description: string | null, latitude: number | null, longitude: number | null): Promise<void> {
     let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
     let location: Location | null = null;
     if (latitude != null && longitude != null) {
@@ -20,6 +39,14 @@ async function registerNewBill(billName: string, billAmount: number, description
         .description(description)
         .location(location)
         .build();
+    if (activityId != null && activityId !== '') {
+        let foundActivity: Activity | null = await actionService.getActivityData(activityId);
+        if (foundActivity) {
+            foundActivity?.bills.push(bill);
+            await actionService.updateActivity(foundActivity);
+            return;
+        }
+    }
     await actionService.registerNewBill(bill);
 }
 
@@ -52,4 +79,11 @@ async function fetchBill(billId: string): Promise<Bill | null> {
     return await actionService.getBillData(billId);
 }
 
-export {registerNewBill, updateBill, fetchAllBills, fetchBill};
+export {
+    registerNewActivity
+    , fetchAllActivities
+    , registerNewBill
+    , updateBill
+    , fetchAllBills
+    , fetchBill
+};

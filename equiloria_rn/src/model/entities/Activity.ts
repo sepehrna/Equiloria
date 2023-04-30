@@ -33,38 +33,38 @@ export class Activity implements Entity {
     }
 
 
-    // @Expose({name: ActivityConstant.C_ACTIVITY_ID})
+    @Expose({name: ActivityConstant.C_ACTIVITY_ID})
     get activityId(): string {
         return this._activityId;
     }
 
-    // @Expose({name: ActivityConstant.C_ACTIVITY_NAME})
+    @Expose({name: ActivityConstant.C_ACTIVITY_NAME})
     get activityName(): string {
         return this._activityName;
     }
 
 
-    // @Expose({name: ActivityConstant.C_FROM_DATE})
-    // @Type(() => Date)
+    @Expose({name: ActivityConstant.C_FROM_DATE})
+    @Type(() => Date)
     get fromDate(): Date | null {
         return this._fromDate;
     }
 
-    // @Expose({name: ActivityConstant.C_TO_DATE})
-    // @Type(() => Date)
+    @Expose({name: ActivityConstant.C_TO_DATE})
+    @Type(() => Date)
     get toDate(): Date | null {
         return this._toDate;
     }
 
-    // @Expose({name: ActivityConstant.C_INSERT_TIME})
+    @Expose({name: ActivityConstant.C_INSERT_TIME})
     get insertTime(): Date {
         return this._insertTime;
     }
 
-    // @Expose({name: ActivityConstant.F_CONSUMPTION_TYPE})
-    // @Transform((params) => {
-    //     new ActivityBuilder().activityId(params.value).build();
-    // })
+    @Expose({name: ActivityConstant.F_CONSUMPTION_TYPE})
+    @Transform((params) => {
+        new ActivityBuilder().activityId(params.value).build();
+    })
     get consumptionType(): ConsumptionType | null {
         return this._consumptionType;
     }

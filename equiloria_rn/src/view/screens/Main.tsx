@@ -7,8 +7,8 @@ import {AppDispatch} from "../redux/store";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {fetchAllBills} from "../../controller/ActionServiceController";
-import {CustomFlatList} from "../components/CustomFlatList";
+import {fetchAllActivities, fetchAllBills} from "../../controller/ActionServiceController";
+import {ScreenDesk} from "../components/ScreenDesk";
 
 const Main: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
@@ -26,17 +26,23 @@ const Main: React.FC = () => {
                 bills.forEach(bill => result.push({id: bill.id, value: bill.value}));
                 return setBills(result);
             };
+            const loadActivities = async (): Promise<void> => {
+                let result: GroupedListItem[] = [];
+                const activities = await fetchAllActivities();
+                activities.forEach(activity => result.push({id: activity.id, value: activity.value}));
+                setActivities(result);
+            };
             loadBills();
+            loadActivities();
         }, [])
     );
 
-    const activityItemLoader: () => GroupedListItem[] = () => {
-        return [{id: '1', value: 'London'}
-            , {id: '2', value: 'LondonTour'}];
+    function navigateToNewActivity() {
+        navigation.navigate('NewActivity')
     }
 
     function navigateToBillDetail(billId: string) {
-        navigation.navigate('BillDetail', {billId: billId})
+        navigation.navigate('BillDetails', {billId: billId})
     }
 
     const navigateToAddBill: () => void = () => {
@@ -52,7 +58,7 @@ const Main: React.FC = () => {
         return <GroupedList listId={billListId}
                             listTitle={'Bills'}
                             indicatorColor='#3374FF'
-                            itemNavigate={navigateToBillDetail}
+                            itemNavigator={navigateToBillDetail}
                             extenderButtonName={'Add bill'}
                             extenderButtonFunction={navigateToAddBill}
                             itemList={bills}/>;
@@ -63,12 +69,12 @@ const Main: React.FC = () => {
                             listTitle={'Activities'}
                             extenderButtonName={'Add activity'}
                             indicatorColor='#FF4833'
-                            itemList={activityItemLoader()}
-                            extenderButtonFunction={navigateToAddBill}/>;
+                            itemList={activities}
+                            extenderButtonFunction={navigateToNewActivity}/>;
     }
 
     return (
-        <CustomFlatList items={
+        <ScreenDesk items={
             [{componentId: '1', componentGenerator: getWrappedAvatar}
                 , {componentId: '2', componentGenerator: getBillList}
                 , {componentId: '3', componentGenerator: getActivityList}]

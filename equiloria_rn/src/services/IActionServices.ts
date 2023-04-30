@@ -10,6 +10,12 @@ export default interface IActionServices {
 
     fetchAllActivities(): Promise<Activity[]>;
 
+    registerNewActivity(activity: Activity): Promise<void | ValidatorResponse>;
+
+    insertActivity(activity: Activity): Promise<void | ValidatorResponse>
+
+    updateActivity(activity: Activity): Promise<void | ValidatorResponse>;
+
     getActivityData(activityId: string): Promise<Activity | null>;
 
     registerNewBill(newBill: Bill): Promise<void | ValidatorResponse>;

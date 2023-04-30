@@ -14,8 +14,6 @@ import UpdateTable from "../sql-components/command-builders/dml/UpdateTable";
 import {LocationConstant} from "../entities/Location";
 import {Direction} from "../sql-components/command-builders/OrderBy";
 import uuid from 'react-native-uuid';
-import DmlCommandAggregator from "./aggregators/DmlCommandAggregator";
-import locationRepository from "./LocationRepository";
 import LocationRepository from "./LocationRepository";
 
 class BillRepository extends BaseRepository<Bill> {
@@ -117,12 +115,14 @@ class BillRepository extends BaseRepository<Bill> {
     }
 
     public async insert(bill: Bill): Promise<void> {
+        console.error('-------------------------------------------');
         let dmlBuilder: DmlBuilder = this
             .makeMandatoryFieldsBuilder(bill)
             .column(BillConstant.F_ACTIVITY_ID, bill.activity?.activityId);
         if (bill.location != null) {
             dmlBuilder = await this.handleLocation(bill, dmlBuilder);
         }
+        console.error('commanddddddddddddddddddddddddddddddddd');
         return await this.executeDmlCommand(dmlBuilder);
     }
 
@@ -171,7 +171,7 @@ class BillRepository extends BaseRepository<Bill> {
         return await this.executeDqlCommand(commandBuilder);
     }
 
-    async update(bill: Bill) {
+    async update(bill: Bill) : Promise<void> {
         let updateBillTable: DmlBuilder = new UpdateTable()
             .tableName(BillConstant.TABLE_NAME)
             .column(BillConstant.C_BILL_AMOUNT, bill.billAmount)

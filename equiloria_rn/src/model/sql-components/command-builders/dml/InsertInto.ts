@@ -11,7 +11,7 @@ export class InsertInto extends DmlBuilder {
             .map(element => `'${element.column}' `)
             .join(', ');
         const columnValues = this.columns
-            .map(element => `'${element.value}' `)
+            .map(element => `${element.value} `)
             .join(', ');
         return `INSERT INTO ${this._tableName} (${columnNames}) VALUES (${columnValues});`;
     }

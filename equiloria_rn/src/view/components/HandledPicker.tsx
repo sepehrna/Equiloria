@@ -12,21 +12,24 @@ interface HandledPickerItem {
 }
 
 interface HandledPickerProps {
-
     pickerId: string;
+    value?: string;
+    setValue?: React.Dispatch<React.SetStateAction<string>>;
     zeroItem: HandledPickerItem;
-    loaderFunction: () => HandledPickerItem[];
+    initialItemId?: string;
+    items: HandledPickerItem[];
 
 }
 
 const HandledPicker: React.FC<HandledPickerProps> = (props: HandledPickerProps) => {
-    const [activity, setActivity] = useState('');
+    let initialState: string = props.initialItemId ? props.initialItemId : '';
+    const [selectedValue, setSelectedValue] = useState(initialState);
     const [isOpen, setOpen] = useState(false);
     const [flatListDataLength, setFlatListDataLength] = useState<number>(0);
     const dispatch = useDispatch<AppDispatch>();
 
     const handleLoadItems = () => {
-        dispatch(load({listId: props.pickerId, items: props.loaderFunction()}));
+        dispatch(load({listId: props.pickerId, items: props.items}));
     };
 
     const flatListData = () => new Array(flatListDataLength).fill(null).map((_, index) => ({
@@ -36,18 +39,18 @@ const HandledPicker: React.FC<HandledPickerProps> = (props: HandledPickerProps) 
 
     useEffect(() => {
         handleLoadItems();
-    })
+    }, []);
 
 
     function identifyPicker() {
         if (Platform.OS !== 'ios') {
             return (
                 <Picker
-                    selectedValue={activity}
-                    onValueChange={value => setActivity(value as string)}
+                    selectedValue={selectedValue}
+                    onValueChange={value => setSelectedValue(value as string)}
                     style={defaultStyles.picker}>
                     <Picker.Item label={props.zeroItem.label} value={props.zeroItem.value}/>
-                    {props.loaderFunction().map((value) => (
+                    {props.items.map((value) => (
                         <Picker.Item label={value.label} value={value.value}/>
                     ))}
                 </Picker>
@@ -56,16 +59,15 @@ const HandledPicker: React.FC<HandledPickerProps> = (props: HandledPickerProps) 
             return (
                 <>
                     <DropDownPicker
-                        // onLayout={handleLoadItems}
-                        onOpen={() => setFlatListDataLength(props.loaderFunction().length)}
+                        onOpen={() => setFlatListDataLength(props.items.length)}
                         onClose={() => setFlatListDataLength(0)}
-                        items={props.loaderFunction()}
+                        items={props.items}
                         open={isOpen}
                         setOpen={() => {
                             setOpen(!isOpen)
                         }}
-                        value={activity}
-                        setValue={(value) => setActivity(value)}
+                        value={selectedValue}
+                        setValue={(value) => setSelectedValue(value)}
                         autoScroll
                         placeholder={props.zeroItem.label}/>
                     <FlatList

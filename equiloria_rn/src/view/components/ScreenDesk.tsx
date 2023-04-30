@@ -18,7 +18,7 @@ const CustomFlatListItem = React.memo((item: FlatListItemProps) => {
     );
 });
 
-const CustomFlatList: React.FC<FlatListProps> = (props: FlatListProps) => {
+const ScreenDesk: React.FC<FlatListProps> = (props: FlatListProps) => {
 
     return (
         <SafeAreaView style={styles.container}>
@@ -34,7 +34,7 @@ const CustomFlatList: React.FC<FlatListProps> = (props: FlatListProps) => {
     )
 }
 
-export {CustomFlatList};
+export {ScreenDesk};
 
 const styles = StyleSheet.create({
     container: {

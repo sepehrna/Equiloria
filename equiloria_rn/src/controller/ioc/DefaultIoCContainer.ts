@@ -20,6 +20,7 @@ import commandExecutorName = CommandExecutorDefinition.COMMAND_EXECUTOR_NAME;
 import {RepositoryInitiatorDefinition} from "../../services/IRepositoryInitiator";
 import activityRepository from "../../model/repositories/ActivityRepository";
 import REPOSITORY_INITIATOR_NAME = RepositoryInitiatorDefinition.REPOSITORY_INITIATOR_NAME;
+import ActivityValidator from "../../services/ActivityValidator";
 
 export class DefaultIoCContainer implements IIoCContainer {
     private services: Map<string, any>;
@@ -41,7 +42,10 @@ export class DefaultIoCContainer implements IIoCContainer {
         this.register(deviceServicesInterfaceName, expoBasedDeviceServices);
         let billValidator = new BillValidator();
         this.register(BillValidator.billValidatorName, billValidator);
+        let activityValidator = new ActivityValidator();
+        this.register(ActivityValidator.activityValidatorName, activityValidator);
         let actionServices = new ActionServices(this.resolve(ActivityRepository.activityRepositoryName)
+            , activityValidator
             , this.resolve(BillRepository.billRepositoryName)
             , billValidator);
         this.register(actionServicesInterfaceName

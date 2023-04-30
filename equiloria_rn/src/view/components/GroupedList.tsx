@@ -20,7 +20,7 @@ interface GroupedListProps {
     listId: string;
     listTitle: string;
     itemList: GroupedListItem[];
-    itemNavigate?: (itemId: string) => void;
+    itemNavigator?: (itemId: string) => void;
     indicatorColor?: string;
     extenderButtonName: string;
     extenderButtonFunction: () => void | undefined;
@@ -46,7 +46,7 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
     function generateListItems() {
         return props.itemList.map((item: GroupedListItem, index) => {
             return (
-                <Pressable key={index} onPress={() => props.itemNavigate ? props.itemNavigate(item.id) : undefined}>
+                <Pressable key={index} onPress={() => props.itemNavigator ? props.itemNavigator(item.id) : undefined}>
                     <ListItem bottomDivider
                               containerStyle={index === 0
                                   ? styles.topElementContainerStyle : undefined}>

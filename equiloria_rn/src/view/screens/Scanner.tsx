@@ -26,7 +26,7 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Scanner'>>();
 
     const navigateToDetail = () => {
-        navigation.navigate('BillDetail', {billName: billName, totalAmount: +totalAmount});
+        navigation.navigate('BillDetails', {billName: billName, totalAmount: +totalAmount});
     }
 
     const requestCameraPermission = async () => {

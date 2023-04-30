@@ -7,7 +7,6 @@ import {InsertInto} from "../sql-components/command-builders/dml/InsertInto";
 import {DqlBuilder} from "../sql-components/command-builders/dql/DqlBuilder";
 import {Direction} from "../sql-components/command-builders/OrderBy";
 import DeleteTable from "../sql-components/command-builders/dml/DeleteTable";
-import {v4 as generateUuid} from "uuid";
 import DropTable from "../sql-components/command-builders/ddl/DropTable";
 import DmlCommandAggregator from "./aggregators/DmlCommandAggregator";
 import {ColumnType} from "../sql-components/command-builders/ColumnType";
@@ -15,7 +14,7 @@ import UpdateTable from "../sql-components/command-builders/dml/UpdateTable";
 import BillRepository from "./BillRepository";
 import AlterTable from "../sql-components/command-builders/ddl/AlterTable";
 import {ConsumptionTypeConstant} from "../entities/ConsumptionType";
-
+import uuid from "react-native-uuid";
 
 
 class ActivityRepository extends BaseRepository<Activity> {
@@ -69,10 +68,10 @@ class ActivityRepository extends BaseRepository<Activity> {
 
     public async insert(activity: Activity): Promise<void> {
         const commandAggregator = new DmlCommandAggregator();
-        let uuid = generateUuid();
+        let uuidValue = uuid.v4();
         const insertCommandBuilder = new InsertInto()
             .tableName(ActivityConstant.TABLE_NAME)
-            .column(ActivityConstant.C_ACTIVITY_ID, uuid)
+            .column(ActivityConstant.C_ACTIVITY_ID, uuidValue)
             .column(ActivityConstant.C_ACTIVITY_NAME, activity.activityName)
             .column(ActivityConstant.C_TO_DATE, activity.toDate)
             .column(ActivityConstant.C_INSERT_TIME, new Date().getTime());
@@ -91,6 +90,7 @@ class ActivityRepository extends BaseRepository<Activity> {
                 foundActivity = await this.findById(activity.activityId);
             } catch (e) {
                 console.error(e);
+                console.info('Updating activity was not successful.');
                 return false;
             }
         }
@@ -115,8 +115,10 @@ class ActivityRepository extends BaseRepository<Activity> {
                 commandAggregator.command(this.billRepository.persistByParent(bill));
             }
             await this.executeDmlCommandsWithAggregator(commandAggregator);
+            console.info('Activity has updated.');
             return true;
         }
+        console.info('Activity not found');
         return false;
     }
 

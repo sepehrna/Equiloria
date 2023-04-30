@@ -1,32 +1,32 @@
-import React, {ReactNode, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Pressable, StyleSheet, TextInput, View} from 'react-native';
 import {Text} from 'react-native-elements';
 import ActionButton from "../components/ActionButton";
-import {RouteProp, useNavigation} from "@react-navigation/native";
+import {RouteProp, useFocusEffect, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import HandledPicker, {HandledPickerItem} from "../components/HandledPicker";
 import {useDispatch} from "react-redux";
 import {AppDispatch} from "../redux/store";
 import {create} from "../redux/HandledPickerSlice";
 import {getDeviceLocation, getLocationAccessPermission} from "../../controller/DeviceServicesController";
-import {fetchBill, registerNewBill, updateBill} from "../../controller/ActionServiceController";
+import {
+    fetchAllActivities,
+    fetchBill,
+    registerNewBill,
+    updateBill
+} from "../../controller/ActionServiceController";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {preventingAlert, ValidationType} from "../utils/ValidationHelper";
 import {initialLocationCoordinates, LocationCoordinates} from "../../common/types/LocationCoordinates";
 import {Bill} from "../../model/entities/Bill";
-import {CustomFlatList} from "../components/CustomFlatList";
+import {ScreenDesk} from "../components/ScreenDesk";
 
-type BillDetailsRouteProp = RouteProp<RootStackParamList, 'BillDetail'>;
+type BillDetailsRouteProp = RouteProp<RootStackParamList, 'BillDetails'>;
 type BillDetailScreenProps = {
     route: BillDetailsRouteProp;
 };
 
-type ScreenComponentFlatListItemProps = {
-    componentId: string;
-    componentGenerator: () => ReactNode;
-}
-
-const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
+const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
     const isUpdate = route.params.billId != undefined && route.params.billId !== '';
     const [billName, setBillName] = useState<string>('')
     const [amount, setAmount] = useState<string>('0.00');
@@ -34,6 +34,8 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
     const [tipAmount, setTipAmount] = useState<string>('');
     const [description, setDescription] = useState<string>('');
     const [locationAccessStatus, setLocationAccessStatus] = useState<Boolean | null>(null);
+    const [activity, setActivity] = useState<string>('');
+    const [activityList, setActivityList] = useState<HandledPickerItem[]>([]);
     const dispatch = useDispatch<AppDispatch>();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
     const init = async () => {
@@ -42,7 +44,7 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
             if (bill != null) {
                 setBillName(bill?.billName);
                 let numberBillAmount: number = +bill.billAmount;
-                let billAmount: string = numberBillAmount.toFixed(2)
+                let billAmount: string = numberBillAmount.toFixed(2);
                 setAmount(billAmount);
                 if (bill.description != null) {
                     setDescription(bill.description);
@@ -63,6 +65,18 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         init();
     }, [])
 
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadActivities = async (): Promise<void> => {
+                let result: HandledPickerItem[] = [];
+                const activities = await fetchAllActivities();
+                activities.forEach(activity => result.push({value: activity.id, label: activity.value}));
+                setActivityList(result);
+            };
+            loadActivities();
+        }, [])
+    );
+
     const getLocationPermission = async () => {
         if (locationAccessStatus == null) {
             let locationAccessPermission: Boolean = await getLocationAccessPermission();
@@ -73,10 +87,6 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         setTipPercentage(percentage);
         setTipAmount('');
     };
-    const activityItemLoader: () => HandledPickerItem[] = () => {
-        return [{value: '1', label: 'London'}
-            , {value: '2', label: 'LondonTour'}];
-    }
 
     function handleAmountString(): void {
         if (amount !== '' && !amount.includes('.')) {
@@ -93,11 +103,11 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         if (locationAccessStatus != null && locationAccessStatus) {
             locationCoordinates = await getDeviceLocation(true);
         }
-        await registerNewBill(billName, +finalAmount, description, locationCoordinates.latitude, locationCoordinates.longitude);
+        await registerNewBill(billName, +finalAmount, activity, description, locationCoordinates.latitude, locationCoordinates.longitude);
         navigateToMain();
     }
 
-    function calculateTipAmount(): string {
+    function calculateTipAmount(initialAmount: string): string {
         let finalAmount: number = 0;
         if (tipPercentage === 10) {
             finalAmount = +amount + ((+amount * 10) / 100);
@@ -107,13 +117,14 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         } else if (tipAmount !== '') {
             finalAmount = +amount + +tipAmount;
         }
-        return finalAmount.toFixed(0);
+        return finalAmount !== 0 ? finalAmount.toFixed(0) : initialAmount;
     }
 
     async function submit(): Promise<void> {
         await getLocationPermission();
         if (amount != null && amount !== '' && amount !== '0.00') {
-            let finalAmount: string = calculateTipAmount();
+            console.warn(isUpdate, '................');
+            let finalAmount: string = calculateTipAmount(amount);
             if (isUpdate) {
                 await updateBill(route.params.billId, +finalAmount, description);
             } else {
@@ -125,12 +136,12 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
         }
     }
 
-    const mainFlatListData = new Array<ScreenComponentFlatListItemProps>();
-    mainFlatListData.push({componentId: '1', componentGenerator: getAmountContainer});
-    mainFlatListData.push({componentId: '2', componentGenerator: getActivityDropDownContainer});
-    mainFlatListData.push({componentId: '3', componentGenerator: getTipAmountContainer});
-    mainFlatListData.push({componentId: '4', componentGenerator: getDescriptionContainer});
-    mainFlatListData.push({componentId: '5', componentGenerator: getButtonContainer});
+    const screenDeskElements = [];
+    screenDeskElements.push({componentId: '1', componentGenerator: getAmountContainer});
+    screenDeskElements.push({componentId: '2', componentGenerator: getActivityDropDownContainer});
+    screenDeskElements.push({componentId: '3', componentGenerator: getTipAmountContainer});
+    screenDeskElements.push({componentId: '4', componentGenerator: getDescriptionContainer});
+    screenDeskElements.push({componentId: '5', componentGenerator: getButtonContainer});
 
     function getAmountContainer() {
         return (
@@ -151,49 +162,56 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
     }
 
     function getActivityDropDownContainer() {
-        return <>
-            <Text style={styles.label}>Activity</Text>
-            <HandledPicker pickerId={'activity'}
-                           zeroItem={{value: '', label: 'Choose activity'}}
-                           loaderFunction={activityItemLoader}/>
-        </>;
+        return (
+            <>
+                <Text style={styles.label}>Activity</Text>
+                <HandledPicker pickerId={'activity'}
+                               value={activity}
+                               setValue={setActivity}
+                               zeroItem={{value: '', label: 'Choose activity'}}
+                               items={activityList}
+                               initialItemId={'1'}/>
+            </>
+        );
     }
 
     function getTipAmountContainer() {
-        return <>
-            <Text style={styles.label}>Add tip amount</Text>
-            <View style={styles.tipContainer}>
-                <Pressable
-                    style={({pressed}) => [
-                        styles.tipButton,
-                        tipPercentage === 10 ? styles.tipButtonSelected : {},
-                        pressed && styles.tipButtonPressed,
-                    ]}
-                    onPress={() => handleTipPercentage(10)}>
-                    <Text style={styles.tipButtonText}>10%</Text>
-                </Pressable>
-                <Pressable
-                    style={({pressed}) => [
-                        styles.tipButton,
-                        tipPercentage === 20 ? styles.tipButtonSelected : {},
-                        pressed && styles.tipButtonPressed,
-                    ]}
-                    onPress={() => handleTipPercentage(20)}
-                >
-                    <Text style={styles.tipButtonText}>20%</Text>
-                </Pressable>
-                <TextInput
-                    style={styles.tipInput}
-                    value={tipAmount}
-                    onChangeText={text => {
-                        setTipAmount(text);
-                        setTipPercentage(0);
-                    }}
-                    placeholder="Enter tip amount"
-                    keyboardType="numeric"
-                />
-            </View>
-        </>;
+        return (
+            <>
+                <Text style={styles.label}>Add tip amount</Text>
+                <View style={styles.tipContainer}>
+                    <Pressable
+                        style={({pressed}) => [
+                            styles.tipButton,
+                            tipPercentage === 10 ? styles.tipButtonSelected : {},
+                            pressed && styles.tipButtonPressed,
+                        ]}
+                        onPress={() => handleTipPercentage(10)}>
+                        <Text style={styles.tipButtonText}>10%</Text>
+                    </Pressable>
+                    <Pressable
+                        style={({pressed}) => [
+                            styles.tipButton,
+                            tipPercentage === 20 ? styles.tipButtonSelected : {},
+                            pressed && styles.tipButtonPressed,
+                        ]}
+                        onPress={() => handleTipPercentage(20)}
+                    >
+                        <Text style={styles.tipButtonText}>20%</Text>
+                    </Pressable>
+                    <TextInput
+                        style={styles.tipInput}
+                        value={tipAmount}
+                        onChangeText={text => {
+                            setTipAmount(text);
+                            setTipPercentage(0);
+                        }}
+                        placeholder="Enter tip amount"
+                        keyboardType="numeric"
+                    />
+                </View>
+            </>
+        );
     }
 
     function getDescriptionContainer() {
@@ -220,7 +238,7 @@ const BillDetailForm: React.FC<BillDetailScreenProps> = ({route}) => {
     }
 
     return (
-        <CustomFlatList items={mainFlatListData}/>
+        <ScreenDesk items={screenDeskElements}/>
     );
 };
 
@@ -309,4 +327,4 @@ const styles = StyleSheet.create({
         flexDirection: 'row'
     },
 });
-export default BillDetailForm;
+export default BillDetails;

@@ -3,15 +3,18 @@ import NewBill from "../screens/NewBill";
 import {NavigationContainer} from "@react-navigation/native";
 import React from "react";
 import {createStackNavigator} from "@react-navigation/stack";
-import BillDetail from "../screens/BillDetail";
+import BillDetails from "../screens/BillDetails";
 import Scanner from "../screens/Scanner";
-import {SecondMain} from "../screens/SecondMain";
+import {NewActivity} from "../screens/NewActivity";
+import {ActivityDetails} from "../screens/ActivityDetails";
 
 type RootStackParamList = {
     Main: undefined;
     NewBill: undefined;
     Scanner: { billName: string }
-    BillDetail: { billName?: string, billId?: string, totalAmount?: number };
+    BillDetails: { billName?: string, billId?: string, totalAmount?: number };
+    NewActivity: undefined;
+    ActivityDetails: { activityName?: string, activityId?: string };
 };
 
 const stackNavigator = createStackNavigator<RootStackParamList>();
@@ -41,10 +44,24 @@ const ApplicationNavigationContainer: React.FC = () => {
                     }}
                 />
                 <stackNavigator.Screen
-                    name="BillDetail"
-                    component={BillDetail}
+                    name="BillDetails"
+                    component={BillDetails}
                     options={{
-                        headerTitle: 'Bill detail',
+                        headerTitle: 'Bill details',
+                    }}
+                />
+                <stackNavigator.Screen
+                    name="NewActivity"
+                    component={NewActivity}
+                    options={{
+                        headerTitle: 'New activity',
+                    }}
+                />
+                <stackNavigator.Screen
+                    name="ActivityDetails"
+                    component={ActivityDetails}
+                    options={{
+                        headerTitle: 'Activity details',
                     }}
                 />
             </stackNavigator.Navigator>

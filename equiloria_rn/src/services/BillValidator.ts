@@ -3,11 +3,14 @@ import {Bill} from "../model/entities/Bill";
 
 class BillValidator implements IValidator<Bill> {
     public static billValidatorName = 'BillValidator';
+
     validateInsert(bill: Bill): ValidatorResponse {
         if (bill.billName == null) {
+            console.error('Name...................');
             return {validationResult: false, validationExceptionMessage: 'Bill name cannot be empty'};
         }
-        if(bill.billAmount == null || bill.billAmount === 0){
+        if (bill.billAmount == null || bill.billAmount === 0) {
+            console.error('amount...................');
             return {validationResult: false, validationExceptionMessage: 'Bill amount cannot be zero'};
         }
         return {validationResult: true, validationExceptionMessage: null};
@@ -20,7 +23,7 @@ class BillValidator implements IValidator<Bill> {
         if (bill.billName == null) {
             return {validationResult: false, validationExceptionMessage: 'Bill name cannot be empty'};
         }
-        if(bill.billAmount == null || bill.billAmount === 0){
+        if (bill.billAmount == null || bill.billAmount === 0) {
             return {validationResult: false, validationExceptionMessage: 'Bill amount cannot be zero'};
         }
         return {validationResult: true, validationExceptionMessage: null};

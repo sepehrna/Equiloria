@@ -1,11 +1,12 @@
 import React from 'react';
-import {StyleSheet, Text, TextInput, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import ActionButton from "../components/ActionButton";
 import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {preventingAlert, ValidationType} from "../utils/ValidationHelper";
-import {CustomFlatList} from "../components/CustomFlatList";
+import {ScreenDesk} from "../components/ScreenDesk";
+import {TextBox} from "../components/TextBox";
 
 const NewBill: React.FC = () => {
     const [billName, setBillName] = React.useState('');
@@ -21,7 +22,7 @@ const NewBill: React.FC = () => {
     }
     const navigateToBillDetail = () => {
         if (billName != '' || billName !== '') {
-            navigation.navigate('BillDetail', {billName: billName, totalAmount: 0});
+            navigation.navigate('BillDetails', {billName: billName, totalAmount: 0});
         } else {
             preventingAlert('Bill name', ValidationType.EMPTY);
         }
@@ -29,54 +30,36 @@ const NewBill: React.FC = () => {
 
     function getNameInputContainer() {
         return (
-            <View style={styles.inputContainer}>
-                <Text style={styles.asterisk}>* Required</Text>
-                <TextInput
-                    style={styles.input}
-                    value={billName}
-                    onChangeText={setBillName}
-                    placeholder="Enter bill name"
-                />
-            </View>
+            <TextBox
+                label={'Bill name'}
+                value={billName}
+                onChange={setBillName}
+                placeholder='Enter bill name'
+                isRequired={true}
+            />
         );
     }
 
     function getButtons() {
-        return <View style={styles.buttonContainer}>
-            <ActionButton text='Scan bill' onPress={navigateToScanner}/>
-            <ActionButton text='Enter manually'
-                          onPress={navigateToBillDetail}
-                          backgroundColor='black'
-                          pressedBackgroundColor='gray'/>
-        </View>;
+        return (
+            <View style={styles.buttonContainer}>
+                <ActionButton text='Scan bill' onPress={navigateToScanner}/>
+                <ActionButton text='Enter manually'
+                              onPress={navigateToBillDetail}
+                              backgroundColor='black'
+                              pressedBackgroundColor='gray'/>
+            </View>
+        );
     }
 
     return (
-        <CustomFlatList
+        <ScreenDesk
             items={[{componentId: '1', componentGenerator: getNameInputContainer}
                 , {componentId: '2', componentGenerator: getButtons}]}/>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    inputContainer: {
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 4,
-        marginBottom: 24,
-    },
-    input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        borderRadius: 10,
-        paddingHorizontal: 10,
-    },
     scanBillButton: {
         backgroundColor: 'blue',
     },
@@ -102,11 +85,5 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
     },
-    asterisk: {
-        fontSize: 12,
-        color: 'red',
-        marginLeft: 2,
-        marginBottom: 5
-    }
 });
 export default NewBill;
