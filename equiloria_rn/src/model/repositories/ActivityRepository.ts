@@ -77,7 +77,7 @@ class ActivityRepository extends BaseRepository<Activity> {
             .column(ActivityConstant.C_INSERT_TIME, new Date().getTime());
         commandAggregator.command(insertCommandBuilder);
         for (const bill of activity.bills) {
-            bill.activity = activity;
+            bill.activity = activity.activityId;
             commandAggregator.command(this.billRepository.persistByParent(bill));
         }
         await this.executeDmlCommandsWithAggregator(commandAggregator);
@@ -111,7 +111,7 @@ class ActivityRepository extends BaseRepository<Activity> {
                 .where(ActivityConstant.C_ACTIVITY_ID, activity.activityId);
             commandAggregator.command(updateCommandBuilder);
             for (const bill of activity.bills) {
-                bill.activity = activity;
+                bill.activity = activity.activityId;
                 commandAggregator.command(this.billRepository.persistByParent(bill));
             }
             await this.executeDmlCommandsWithAggregator(commandAggregator);
@@ -144,18 +144,17 @@ class ActivityRepository extends BaseRepository<Activity> {
     }
 
     public async findById(activityId: string): Promise<Activity | null> {
+        console.info('dql...........................')
         const dqlBuilder = new DqlBuilder<Activity>(new ActivityBuilder().build())
             .select('*')
             .from(ActivityConstant.TABLE_NAME)
             .where(ActivityConstant.C_ACTIVITY_ID, activityId);
 
         let activities: Activity[] = await this.executeDqlCommand(dqlBuilder);
-        let result: Activity | null = null;
         if (activities.length === 1) {
-            result = activities[0];
-            result.bills = await this.billRepository.findByActivityId(result.activityId);
+            activities[0].bills = await this.billRepository.findByActivityId(activities[0].activityId);
         }
-        return result;
+        return activities[0];
     }
 }
 

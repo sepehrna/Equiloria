@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import React, {useState} from 'react';
-import WrappedAvatar from "../components/WrappedAvatar";
+import AccountInfo from "../components/AccountInfo";
 import GroupedList, {GroupedListItem} from "../components/GroupedList";
 import {useDispatch} from "react-redux";
 import {AppDispatch} from "../redux/store";
@@ -9,6 +9,8 @@ import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {fetchAllActivities, fetchAllBills} from "../../controller/ActionServiceController";
 import {ScreenDesk} from "../components/ScreenDesk";
+import {Platform} from "react-native";
+import Constants from 'expo-constants';
 
 const Main: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
@@ -50,8 +52,8 @@ const Main: React.FC = () => {
     }
 
     function getWrappedAvatar() {
-        return <WrappedAvatar text={'Sepehr Najjarpour'}
-                              subText={'Account details'}/>;
+        return <AccountInfo text={'Equiloria User ;)'}
+                            subText={Platform.OS !== 'web' ? Constants.deviceName + ' user': 'Web User'}/>;
     }
 
     function getBillList() {

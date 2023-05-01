@@ -31,7 +31,7 @@ const NewBill: React.FC = () => {
     function getNameInputContainer() {
         return (
             <TextBox
-                label={'Bill name'}
+                // label={'Bill name'}
                 value={billName}
                 onChange={setBillName}
                 placeholder='Enter bill name'

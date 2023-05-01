@@ -1,6 +1,7 @@
 import {StyleSheet, View} from "react-native";
 import {Avatar, colors, Text} from "react-native-elements";
 import React from "react";
+import hairlineWidth = StyleSheet.hairlineWidth;
 
 const defaultPicturePath: number = require('../../../assets/user-image-with-black-background.png');
 
@@ -12,7 +13,7 @@ interface AvatarProps {
     logoPath?: string;
 }
 
-const WrappedAvatar: React.FC<AvatarProps> = (props: AvatarProps) => {
+const AccountInfo: React.FC<AvatarProps> = (props: AvatarProps) => {
 
     return (
         <View style={styles.headerContainer}>
@@ -36,7 +37,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 10,
         backgroundColor: colors.white,
-        borderRadius: 20
+        borderRadius: 20,
+        borderWidth: hairlineWidth,
     },
     textContainer: {
         flexDirection: 'column',
@@ -53,4 +55,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default WrappedAvatar;
+export default AccountInfo;

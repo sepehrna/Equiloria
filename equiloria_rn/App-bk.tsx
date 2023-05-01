@@ -7,7 +7,7 @@
 //         <View style={styles.container}>
 //             {/*<Text>Open up App.tsx to start working on your app!</Text>*/}
 //             <Button title="Test Activity" onPress={testModel}/>
-//             <Text>Press the button to test the Activity model.</Text>
+//             <Text>Press the box to test the Activity model.</Text>
 //             <StatusBar style="auto"/>
 //         </View>
 //     );

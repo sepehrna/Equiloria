@@ -23,7 +23,7 @@ interface HandledPickerProps {
 
 const HandledPicker: React.FC<HandledPickerProps> = (props: HandledPickerProps) => {
     let initialState: string = props.initialItemId ? props.initialItemId : '';
-    const [selectedValue, setSelectedValue] = useState(initialState);
+    const [selectedValue, setSelectedValue] = useState<string>(initialState);
     const [isOpen, setOpen] = useState(false);
     const [flatListDataLength, setFlatListDataLength] = useState<number>(0);
     const dispatch = useDispatch<AppDispatch>();

@@ -56,21 +56,22 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         fontSize: 16,
         fontWeight: 'bold',
-        marginBottom: 15,
+        marginBottom: 9,
         color: '#ccc'
     },
     input: {
-        height: 50,
-        borderColor: 'gray',
+        paddingHorizontal: 10,
+        height: '50%',
+        borderColor: '#ccc',
         borderWidth: 1,
         borderRadius: 10,
-        paddingHorizontal: 10,
-        backgroundColor: '#fff',
+        marginTop: 1,
+        margin: 10,
     },
     asterisk: {
         fontSize: 12,
         color: 'red',
         marginLeft: 2,
-        marginBottom: 5
+        marginBottom: 9
     }
 });

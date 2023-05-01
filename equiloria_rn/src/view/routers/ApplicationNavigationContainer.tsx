@@ -7,6 +7,8 @@ import BillDetails from "../screens/BillDetails";
 import Scanner from "../screens/Scanner";
 import {NewActivity} from "../screens/NewActivity";
 import {ActivityDetails} from "../screens/ActivityDetails";
+import {Participants} from "../screens/Participants";
+import {AddParticipant} from "../screens/AddParticipant";
 
 type RootStackParamList = {
     Main: undefined;
@@ -15,6 +17,8 @@ type RootStackParamList = {
     BillDetails: { billName?: string, billId?: string, totalAmount?: number };
     NewActivity: undefined;
     ActivityDetails: { activityName?: string, activityId?: string };
+    Participants: undefined
+    AddParticipant: undefined
 };
 
 const stackNavigator = createStackNavigator<RootStackParamList>();
@@ -62,6 +66,21 @@ const ApplicationNavigationContainer: React.FC = () => {
                     component={ActivityDetails}
                     options={{
                         headerTitle: 'Activity details',
+                    }}
+                />
+                <stackNavigator.Screen
+                    name="Participants"
+                    component={Participants}
+                    options={{
+                        headerTitle: 'Participants',
+                    }}
+                />
+                <stackNavigator.Screen
+                    name="AddParticipant"
+                    component={AddParticipant}
+                    options={{
+                        headerTitle: 'Add participants',
+                        presentation: 'card'
                     }}
                 />
             </stackNavigator.Navigator>

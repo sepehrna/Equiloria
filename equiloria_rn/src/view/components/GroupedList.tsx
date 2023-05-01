@@ -8,6 +8,7 @@ import {useNavigation} from "@react-navigation/native";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {GestureResponderEvent} from "react-native/Libraries/Types/CoreEventTypes";
+import hairlineWidth = StyleSheet.hairlineWidth;
 
 interface GroupedListItem {
     id: string;
@@ -47,9 +48,9 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
         return props.itemList.map((item: GroupedListItem, index) => {
             return (
                 <Pressable key={index} onPress={() => props.itemNavigator ? props.itemNavigator(item.id) : undefined}>
-                    <ListItem bottomDivider
-                              containerStyle={index === 0
-                                  ? styles.topElementContainerStyle : undefined}>
+                    <ListItem
+                        containerStyle={index === 0
+                            ? styles.topElementContainerStyle : styles.elementContainerStyle}>
                         <Icon style={styles.extenderIcon} name='square' type='font-awesome'
                               color={props.indicatorColor}/>
                         <ListItem.Content>
@@ -88,7 +89,12 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
 const styles = StyleSheet.create({
     groupedLists: {
         marginTop: 10,
-        marginBottom: 10
+        marginBottom: 10,
+        // shadowColor: '#000',
+        // shadowOffset: { width: 10, height: 10 },
+        // shadowOpacity: 0.25,
+        // shadowRadius: 10,
+        // elevation: 10,
     },
     listTitle: {
         fontSize: 20,
@@ -102,17 +108,23 @@ const styles = StyleSheet.create({
     },
     topElementContainerStyle: {
         borderTopLeftRadius: 20,
-        borderTopRightRadius: 20
+        borderTopRightRadius: 20,
+        borderWidth: hairlineWidth,
+    },
+    elementContainerStyle: {
+        borderWidth: hairlineWidth
     },
     bottomElementContainerStyle: {
         borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20
+        borderBottomRightRadius: 20,
+        borderWidth: hairlineWidth
     },
     extenderIcon: {
         textAlign: "left"
         , alignItems: 'flex-start'
         , justifyContent: "flex-end"
-    }
+    },
+
 });
 
 export {GroupedListItem};

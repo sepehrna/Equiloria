@@ -1,5 +1,4 @@
 import {Entity} from "./Entity";
-import {Activity, ActivityBuilder} from "./Activity";
 import {Expose, Transform, Type} from "class-transformer";
 import {Location, LocationBuilder} from "./Location";
 
@@ -23,7 +22,7 @@ export class Bill implements Entity {
     private _billDate: Date;
     private _insertTime: Date;
     private _location: Location | null;
-    private _activity: Activity | null;
+    private _activity: string | null;
     private _description: string | null;
 
     constructor() {
@@ -79,14 +78,11 @@ export class Bill implements Entity {
     }
 
     @Expose({name: BillConstant.F_ACTIVITY_ID})
-    @Transform((params) => {
-        new ActivityBuilder().activityId(params.value).build();
-    })
-    get activity(): Activity | null {
+    get activity(): string | null {
         return this._activity;
     }
 
-    set activity(value: Activity | null) {
+    set activity(value: string | null) {
         this._activity = value;
     }
 
@@ -146,7 +142,7 @@ export class BillBuilder {
         return this;
     }
 
-    activity(activity: Activity): BillBuilder {
+    activity(activity: string): BillBuilder {
         this.bill.activity = activity;
         return this;
     }

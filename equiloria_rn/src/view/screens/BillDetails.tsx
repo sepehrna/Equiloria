@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Pressable, StyleSheet, TextInput, View} from 'react-native';
-import {Text} from 'react-native-elements';
+import {colors, Text} from 'react-native-elements';
 import ActionButton from "../components/ActionButton";
 import {RouteProp, useFocusEffect, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
@@ -49,6 +49,9 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
                 if (bill.description != null) {
                     setDescription(bill.description);
                 }
+                if (bill.activity) {
+                    setActivity(bill.activity);
+                }
             }
         } else {
             const inputTotalAmount: number | undefined = route.params.totalAmount;
@@ -85,7 +88,9 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
     }
     const handleTipPercentage = (percentage: number) => {
         setTipPercentage(percentage);
-        setTipAmount('');
+        if (percentage !== 0) {
+            setTipAmount('');
+        }
     };
 
     function handleAmountString(): void {
@@ -109,13 +114,15 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
 
     function calculateTipAmount(initialAmount: string): string {
         let finalAmount: number = 0;
-        if (tipPercentage === 10) {
-            finalAmount = +amount + ((+amount * 10) / 100);
-        }
-        if (tipPercentage === 20) {
-            finalAmount = +amount + ((+amount * 20) / 100);
-        } else if (tipAmount !== '') {
-            finalAmount = +amount + +tipAmount;
+        if (tipPercentage !== 0) {
+            if (tipPercentage === 10) {
+                finalAmount = +amount + ((+amount * 10) / 100);
+            }
+            if (tipPercentage === 20) {
+                finalAmount = +amount + ((+amount * 20) / 100);
+            } else if (tipAmount !== '') {
+                finalAmount = +amount + +tipAmount;
+            }
         }
         return finalAmount !== 0 ? finalAmount.toFixed(0) : initialAmount;
     }
@@ -126,7 +133,7 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
             console.warn(isUpdate, '................');
             let finalAmount: string = calculateTipAmount(amount);
             if (isUpdate) {
-                await updateBill(route.params.billId, +finalAmount, description);
+                await updateBill(route.params.billId, +finalAmount, description, 'd592b7d9-1c73-4f08-a224-79abe9631d18');
             } else {
                 await register(finalAmount);
             }
@@ -182,29 +189,35 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
                 <View style={styles.tipContainer}>
                     <Pressable
                         style={({pressed}) => [
-                            styles.tipButton,
+                            styles.button,
                             tipPercentage === 10 ? styles.tipButtonSelected : {},
                             pressed && styles.tipButtonPressed,
                         ]}
                         onPress={() => handleTipPercentage(10)}>
-                        <Text style={styles.tipButtonText}>10%</Text>
+                        <Text
+                            style={tipPercentage === 10 ? styles.tipButtonTextSelected : styles.tipButtonText}>
+                            10%
+                        </Text>
                     </Pressable>
                     <Pressable
                         style={({pressed}) => [
-                            styles.tipButton,
+                            styles.button,
                             tipPercentage === 20 ? styles.tipButtonSelected : {},
                             pressed && styles.tipButtonPressed,
                         ]}
                         onPress={() => handleTipPercentage(20)}
                     >
-                        <Text style={styles.tipButtonText}>20%</Text>
+                        <Text
+                            style={tipPercentage === 20 ? styles.tipButtonTextSelected : styles.tipButtonText}>
+                            20%
+                        </Text>
                     </Pressable>
                     <TextInput
                         style={styles.tipInput}
                         value={tipAmount}
+                        onTouchStart={() => handleTipPercentage(0)}
                         onChangeText={text => {
                             setTipAmount(text);
-                            setTipPercentage(0);
                         }}
                         placeholder="Enter tip amount"
                         keyboardType="numeric"
@@ -243,12 +256,6 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        backgroundColor: 'white',
-        justifyContent: 'center',
-    },
     amountContainer: {
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -289,17 +296,25 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 24,
     },
-    tipButton: {
+    button: {
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 10,
         borderWidth: 1,
     },
     tipButtonSelected: {
-        backgroundColor: 'blue',
+        backgroundColor: colors.grey5,
+        borderColor: 'blue',
+        borderWidth: 1
+    },
+    tipButtonText: {
+        color: 'black',
+    },
+    tipButtonTextSelected: {
+        color: 'blue',
     },
     tipButtonPressed: {
-        backgroundColor: '#5F9EA0',
+        backgroundColor: colors.grey5,
     },
     tipInput: {
         width: '50%',
@@ -307,9 +322,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderRadius: 10,
     },
-    tipButtonText: {
-        fontWeight: 'bold'
-    },
+
     inputContainer: {
         backgroundColor: '#fff',
         paddingHorizontal: 8,

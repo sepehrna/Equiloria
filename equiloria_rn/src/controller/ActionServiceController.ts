@@ -6,6 +6,7 @@ import ACTION_SERVICE_NAME = IActionServiceServiceDefinition.ACTION_SERVICE_NAME
 import {Location, LocationBuilder} from "../model/entities/Location";
 import {Activity, ActivityBuilder} from "../model/entities/Activity";
 
+
 async function fetchAllActivities(): Promise<LoaderResponse[]> {
     let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
     let result: LoaderResponse[] = [];
@@ -50,13 +51,21 @@ async function registerNewBill(billName: string, billAmount: number, activityId:
     await actionService.registerNewBill(bill);
 }
 
-async function updateBill(billId: string, billAmount: number, description: string | null) {
+async function updateBill(billId: string, billAmount: number, description: string | null, activityId: string | null) {
     let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
     let toUpdateBill: Bill = new BillBuilder()
         .billId(billId)
         .billAmount(billAmount)
         .description(description)
         .build();
+    if (activityId != null && activityId !== '') {
+        let foundActivity: Activity | null = await actionService.getActivityData(activityId);
+        if (foundActivity) {
+            foundActivity?.bills.push(toUpdateBill);
+            await actionService.updateActivity(foundActivity);
+            return;
+        }
+    }
     if (toUpdateBill != null) {
         toUpdateBill.billAmount = billAmount ? billAmount : toUpdateBill?.billAmount;
         toUpdateBill.description = description != null ? description : toUpdateBill.description;

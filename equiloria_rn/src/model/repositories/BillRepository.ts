@@ -92,7 +92,7 @@ class BillRepository extends BaseRepository<Bill> {
     public insertByParent(bill: Bill): DmlBuilder {
         return this
             .makeMandatoryFieldsBuilder(bill)
-            .column(BillConstant.F_ACTIVITY_ID, bill.activity?.activityId);
+            .column(BillConstant.F_ACTIVITY_ID, bill.activity);
     }
 
     public updateByParent(bill: Bill): DmlBuilder | null {
@@ -107,7 +107,7 @@ class BillRepository extends BaseRepository<Bill> {
             }
             if (foundBill != null) {
                 return new UpdateTable().tableName(BillConstant.TABLE_NAME)
-                    .column(BillConstant.F_ACTIVITY_ID, bill.activity?.activityId)
+                    .column(BillConstant.F_ACTIVITY_ID, bill.activity)
                     .where(BillConstant.C_BILL_ID, bill.billId);
             }
         }
@@ -118,11 +118,10 @@ class BillRepository extends BaseRepository<Bill> {
         console.error('-------------------------------------------');
         let dmlBuilder: DmlBuilder = this
             .makeMandatoryFieldsBuilder(bill)
-            .column(BillConstant.F_ACTIVITY_ID, bill.activity?.activityId);
+            .column(BillConstant.F_ACTIVITY_ID, bill.activity);
         if (bill.location != null) {
             dmlBuilder = await this.handleLocation(bill, dmlBuilder);
         }
-        console.error('commanddddddddddddddddddddddddddddddddd');
         return await this.executeDmlCommand(dmlBuilder);
     }
 
@@ -171,7 +170,7 @@ class BillRepository extends BaseRepository<Bill> {
         return await this.executeDqlCommand(commandBuilder);
     }
 
-    async update(bill: Bill) : Promise<void> {
+    async update(bill: Bill): Promise<void> {
         let updateBillTable: DmlBuilder = new UpdateTable()
             .tableName(BillConstant.TABLE_NAME)
             .column(BillConstant.C_BILL_AMOUNT, bill.billAmount)

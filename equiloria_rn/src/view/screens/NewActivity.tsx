@@ -38,7 +38,7 @@ const NewActivity: React.FC = () => {
     function getNameInputContainer() {
         return (
             <TextBox
-                label={'Activity name'}
+                // label={'Activity name'}
                 value={activityName}
                 onChange={setActivityName}
                 placeholder='Enter activity name'
