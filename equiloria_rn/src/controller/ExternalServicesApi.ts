@@ -1,3 +1,5 @@
+import {promises} from "dns";
+
 const sendToGoogle = async (uri: string): Promise<void> => {
     if (!uri) {
         console.log("URI is undefined");
@@ -48,4 +50,13 @@ const sendToGoogle = async (uri: string): Promise<void> => {
     console.log('Text detected from image: ', responseJson.responses[0].fullTextAnnotation.text);
 };
 
-export {sendToGoogle};
+async function uploadToExtractText(base64Image: string): Promise<void> {
+    let response = await fetch('http://10.72.194.161:3000/upload', {
+        method: 'POST',
+        body: JSON.stringify({base64Image: base64Image}),
+        headers: {'Content-Type': 'application/json'},
+    });
+    console.info(response.json());
+}
+
+export {sendToGoogle, uploadToExtractText};

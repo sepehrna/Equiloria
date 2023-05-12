@@ -1,6 +1,9 @@
 import {Activity} from "../model/entities/Activity";
 import {Bill} from "../model/entities/Bill";
 import {ValidatorResponse} from "./IValidator";
+import {Participant} from "../model/entities/Participant";
+import {ActivityParticipant} from "../model/entities/ActivityParticipants";
+import Transaction from "./calculator/Transaction";
 
 
 export module IActionServiceServiceDefinition {
@@ -10,13 +13,15 @@ export default interface IActionServices {
 
     fetchAllActivities(): Promise<Activity[]>;
 
-    registerNewActivity(activity: Activity): Promise<void | ValidatorResponse>;
+    registerNewActivity(activity: Activity): Promise<string | ValidatorResponse>;
 
-    insertActivity(activity: Activity): Promise<void | ValidatorResponse>
+    insertActivity(activity: Activity): Promise<string | ValidatorResponse>
 
-    updateActivity(activity: Activity): Promise<void | ValidatorResponse>;
+    updateActivity(activity: Activity): Promise<string | ValidatorResponse>;
 
     getActivityData(activityId: string): Promise<Activity | null>;
+
+    findUnAssignedBills(): Promise<Bill[]>;
 
     registerNewBill(newBill: Bill): Promise<void | ValidatorResponse>;
 
@@ -24,7 +29,19 @@ export default interface IActionServices {
 
     fetchAllBills(): Promise<Bill[]>;
 
+    getAllBillsOfActivity(activityId: string): Promise<Bill[]>;
+
     getBillData(billId: string): Promise<Bill | null>;
 
+    registerNewParticipant(participant: Participant): Promise<string | ValidatorResponse>;
 
+    connectParticipantToActivity(activityParticipant: ActivityParticipant): Promise<void | ValidatorResponse>;
+
+    findActivityParticipants(activityId: string): Promise<Participant[]>;
+
+    findNonRelatedActivityParticipants(activityId: string): Promise<Participant[]>;
+
+    getParticipant(participantId: string): Promise<Participant | null>;
+
+    calculateTransactions(activityId: string): Promise<Transaction[] | ValidatorResponse>;
 }

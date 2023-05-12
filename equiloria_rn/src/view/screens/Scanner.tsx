@@ -1,12 +1,12 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
-import {Camera} from 'expo-camera';
+import {AutoFocus, Camera} from 'expo-camera';
 import {RouteProp, useFocusEffect, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import ActionButton from "../components/ActionButton";
-import {CameraCapturedPicture, PermissionResponse} from "expo-camera/src/Camera.types";
-import {sendToGoogle} from "../../controller/ExternalServicesApi";
+import {CameraCapturedPicture, CameraPictureOptions, PermissionResponse} from "expo-camera/src/Camera.types";
+import {uploadToExtractText} from "../../controller/ExternalServicesApi";
 
 
 type ScannerRouteProp = RouteProp<RootStackParamList, 'Scanner'>;
@@ -52,15 +52,15 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
         }, [navigation])
     );
 
-    const recognizeText = async (imageUri: string | undefined) => {
-        if (imageUri != null) {
+    const recognizeText = async (image: string | undefined) => {
+        if (image != null) {
             let recognizedTexts: string[] = [];
             try {
-                // recognizedTexts = await TextRecognition.recognize(imageUri, {
+                // recognizedTexts = await TextRecognition.recognize(image, {
                 //     visionIgnoreThreshold: 0.5,
                 // });
                 console.info('................................');
-                await sendToGoogle(imageUri);
+                await uploadToExtractText(image);
             } catch (e) {
                 console.error(e);
             }
@@ -73,7 +73,7 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
     const captureImage = async () => {
         if (cameraRef != null && cameraRef.current != null) {
             try {
-                const options = {quality: 0.5, base64: true, exif: false};
+                const options : CameraPictureOptions = {quality: 1, base64: true, exif: false};
                 const takenPicture: CameraCapturedPicture = await cameraRef.current.takePictureAsync(options);
                 await recognizeText(takenPicture.base64);
                 setPhoto(takenPicture.uri);
@@ -110,7 +110,7 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
             </View>
             : hasPermission
                 ?
-                <Camera style={defaultStyles.camera} ref={cameraRef}>
+                <Camera style={defaultStyles.camera} ref={cameraRef} autoFocus={1}>
                     <View style={defaultStyles.overlay}/>
                 </Camera>
                 :

@@ -5,7 +5,6 @@ import DdlBuilder from "../sql-components/command-builders/ddl/DdlBuilder";
 import DropTable from "../sql-components/command-builders/ddl/DropTable";
 import {BaseRepository} from "./BaseRepository";
 import CommandExecutor from "../sql-components/command-executors/CommandExecutor";
-import {Bill, BillConstant} from "../entities/Bill";
 import DmlBuilder from "../sql-components/command-builders/dml/DmlBuilder";
 import uuid from "react-native-uuid";
 import {InsertInto} from "../sql-components/command-builders/dml/InsertInto";

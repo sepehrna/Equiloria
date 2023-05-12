@@ -18,9 +18,10 @@ const NewActivity: React.FC = () => {
         navigation.navigate('Main');
     }
 
-    function navigateToActivityDetail() {
+    async function navigateToActivityDetail() {
         if (activityName != '' || activityName !== '') {
-            navigation.navigate('ActivityDetails', {activityName: activityName});
+            let registeredActivityId = await registerNewActivity(activityName, null);
+            navigation.navigate('ActivityDetails', {activityId: registeredActivityId});
         } else {
             preventingAlert('Activity name', ValidationType.EMPTY);
         }
@@ -38,7 +39,6 @@ const NewActivity: React.FC = () => {
     function getNameInputContainer() {
         return (
             <TextBox
-                // label={'Activity name'}
                 value={activityName}
                 onChange={setActivityName}
                 placeholder='Enter activity name'

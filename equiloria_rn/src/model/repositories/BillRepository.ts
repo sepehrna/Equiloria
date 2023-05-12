@@ -11,7 +11,7 @@ import {ColumnType} from "../sql-components/command-builders/ColumnType";
 import DdlBuilder from "../sql-components/command-builders/ddl/DdlBuilder";
 import {DqlBuilder} from "../sql-components/command-builders/dql/DqlBuilder";
 import UpdateTable from "../sql-components/command-builders/dml/UpdateTable";
-import {LocationConstant} from "../entities/Location";
+import {Location, LocationConstant} from "../entities/Location";
 import {Direction} from "../sql-components/command-builders/OrderBy";
 import uuid from 'react-native-uuid';
 import LocationRepository from "./LocationRepository";
@@ -46,8 +46,8 @@ class BillRepository extends BaseRepository<Bill> {
     }
 
     public async addAllRelations(): Promise<void> {
-        await this.addActivityRelation();
         await this.addLocationRelation();
+        await this.addActivityRelation();
     }
 
     private async addLocationRelation() {
@@ -115,7 +115,6 @@ class BillRepository extends BaseRepository<Bill> {
     }
 
     public async insert(bill: Bill): Promise<void> {
-        console.error('-------------------------------------------');
         let dmlBuilder: DmlBuilder = this
             .makeMandatoryFieldsBuilder(bill)
             .column(BillConstant.F_ACTIVITY_ID, bill.activity);
@@ -189,13 +188,28 @@ class BillRepository extends BaseRepository<Bill> {
 
     private async handleLocation(bill: Bill, dmlBuilder: DmlBuilder): Promise<DmlBuilder> {
         if (bill.location != null) {
-            await this.locationRepository.insert(bill.location);
-            let foundLocation = await this.locationRepository.findByLatitudeAndLongitude(bill.location.latitude, bill.location.longitude);
+            let foundLocation: Location | null = await this.locationRepository.findByLatitudeAndLongitude(bill.location.latitude, bill.location.longitude);
+            if (foundLocation == null) {
+                await this.locationRepository.insert(bill.location);
+                foundLocation = await this.locationRepository.findByLatitudeAndLongitude(bill.location.latitude, bill.location.longitude);
+            }
             if (foundLocation != null) {
                 dmlBuilder.column(BillConstant.F_LOCATION_ID, foundLocation.locationId);
             }
         }
         return dmlBuilder;
+    }
+
+    async findUnAssignedBills(): Promise<Bill[] | null> {
+        let customQuery: string = 'SELECT * FROM '
+            + BillConstant.TABLE_NAME
+            + ' WHERE '
+            + BillConstant.TABLE_NAME
+            + '.'
+            + BillConstant.F_ACTIVITY_ID
+            + ' IS NULL '
+        let billInstance = new BillBuilder().build();
+        return await this.executeCustomDqlCommand<Bill>(customQuery, billInstance);
     }
 }
 

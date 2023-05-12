@@ -1,70 +1,155 @@
 import React, {useState} from 'react';
-import {SafeAreaView, StyleSheet, Button, TextInput, Alert} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {StyleSheet, Alert, View, TextInput} from 'react-native';
+import {RouteProp, useFocusEffect, useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
+import {
+    addParticipantToActivity, getParticipant
+} from "../../controller/ActionServiceController";
+import ActionButton from "../components/ActionButton";
+import {ScreenDesk} from "../components/ScreenDesk";
+import {Text} from "react-native-elements";
+import {LoaderResponse} from "../../common/types/LoaderResponse";
 
-interface Contact {
-    id: string;
-    name: string;
-    phoneNumber: string;
-}
-
-const initialContacts: Contact[] = [
-    {id: '1', name: 'John Doe', phoneNumber: '123-456-7890'},
-    {id: '2', name: 'Jane Doe', phoneNumber: '098-765-4321'},
-];
-
-const AddParticipant: React.FC = () => {
-
+type AddParticipantRouteProps = RouteProp<RootStackParamList, 'AddParticipant'>;
+type AddParticipantScreenProps = {
+    route: AddParticipantRouteProps;
+};
+const AddParticipant: React.FC<AddParticipantScreenProps> = ({route}) => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'AddParticipant'>>();
-    const [name, setName] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
+    const activityId = route.params.activityId;
+    const participantId = route.params.participantId;
+    const [firstName, setFirstName] = useState<string>('');
+    const [lastName, setLastName] = useState<string>('');
+    const [spentAmount, setSpentAmount] = useState<string>('');
 
-    const handleAddContact = () => {
-        if (!name || !phoneNumber) {
-            Alert.alert('Name and Phone Number are required');
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadParticipant = async (): Promise<void> => {
+                if (participantId) {
+                    let foundParticipant: LoaderResponse | null = await getParticipant(participantId);
+                    if (foundParticipant != null) {
+                        setFirstName(foundParticipant.value.substring(0, foundParticipant.value.indexOf(' ')))
+                        setLastName(foundParticipant.value.substring(foundParticipant.value.indexOf(' '), foundParticipant.value.length))
+                    }
+                }
+            }
+            loadParticipant();
+        }, [])
+    );
+
+    const handleAddParticipant = async () => {
+        if (!firstName || !lastName || !spentAmount) {
+            Alert.alert('First name, Last name and spentAmount are required');
             return;
         }
-
-        const newContact: Contact = {id: Date.now().toString(), name, phoneNumber};
-        initialContacts.push(newContact);
-        navigation.goBack();
+        await addParticipantToActivity(activityId, participantId, firstName, lastName, spentAmount);
+        setTimeout(() => {
+            console.info("This is handled delay for persisting all the things in database");
+            navigation.navigate('ActivityDetails', {activityId: activityId});
+        }, 200);
     };
 
+    const handleCancel = () => {
+        navigation.navigate('ActivityDetails', {activityId: activityId});
+    }
+
+    function getInputs() {
+        return (
+            <>
+                <View style={styles.label}>
+                    <Text>First name</Text>
+                    <Text style={styles.asterisk}> *</Text>
+                </View>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={firstName}
+                        onChangeText={setFirstName}
+                        placeholder="Enter first name"
+                        multiline
+                    />
+                </View>
+                <View style={styles.label}>
+                    <Text>Last name</Text>
+                    <Text style={styles.asterisk}> *</Text>
+                </View>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={lastName}
+                        onChangeText={setLastName}
+                        placeholder="Enter last name"
+                        multiline
+                    />
+                </View>
+                <View style={styles.label}>
+                    <Text>Spent amount</Text>
+                    <Text style={styles.asterisk}> *</Text>
+                </View>
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        value={spentAmount}
+                        onChangeText={setSpentAmount}
+                        placeholder="Enter spent amount"
+                        multiline
+                    />
+                </View>
+            </>
+        );
+    }
+
+    function getButtons() {
+        return (
+            <View style={styles.buttonContainer}>
+                <ActionButton text='Add participant'
+                              onPress={handleAddParticipant}
+                              backgroundColor={'green'}/>
+                <ActionButton text='Cancel'
+                              onPress={handleCancel}
+                              backgroundColor={'black'}/>
+            </View>
+        );
+    }
+
     return (
-        <SafeAreaView style={styles.container}>
-            <TextInput
-                style={styles.input}
-                onChangeText={setName}
-                value={name}
-                placeholder="Name"
-            />
-            <TextInput
-                style={styles.input}
-                onChangeText={setPhoneNumber}
-                value={phoneNumber}
-                placeholder="Phone Number"
-                keyboardType="phone-pad"
-            />
-            <Button title="Add Contact" onPress={handleAddContact}/>
-        </SafeAreaView>
+        <ScreenDesk
+            items={[{componentId: '1', componentGenerator: getInputs}
+                , {componentId: '2', componentGenerator: getButtons}]}/>
     );
 }
 
 export {AddParticipant};
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+    buttonContainer: {
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+    },
+    asterisk: {
+        fontSize: 12,
+        color: 'red',
+        marginLeft: 2,
+        marginBottom: 9
+    },
+    label: {
+        flexDirection: 'row',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        color: '#ccc'
+    },
+    inputContainer: {
         backgroundColor: '#fff',
-        padding: 10,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 10,
+        marginBottom: 15,
+        borderWidth: 1
     },
     input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        paddingHorizontal: 10,
-        marginBottom: 10,
+        padding: 8,
+        fontSize: 16,
     },
 });

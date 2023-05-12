@@ -6,7 +6,6 @@ import {Provider} from "react-redux";
 import {store} from "./src/view/redux/store";
 import ApplicationNavigationContainer from "./src/view/routers/ApplicationNavigationContainer";
 import {ConnectionStatusProvider} from "./src/view/components/ConnectionStatusContext";
-import KeyboardHandler from "./src/view/components/KeyboardHandler";
 import {initSystem} from "./src/controller/ioc/SystemConfigurationController";
 
 createStackNavigator();
@@ -20,16 +19,20 @@ export default function App() {
         try {
             if (!appIsReady) {
                 await initSystem(Platform.OS);
+                setAppIsReady(true);
             }
         } catch (e) {
             console.warn(e);
         } finally {
-            setAppIsReady(true);
+
         }
     }
 
     useEffect(() => {
         prepare();
+        setTimeout(() => {
+            console.info("This is handled delay for initiating the database");
+        }, 2000);
     }, []);
 
 
@@ -45,7 +48,7 @@ export default function App() {
     }, [appIsReady]);
 
     if (!appIsReady) {
-        return null;
+        return false;
     }
 
     return (

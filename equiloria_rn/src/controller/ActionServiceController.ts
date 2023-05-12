@@ -2,9 +2,15 @@ import {Bill, BillBuilder} from "../model/entities/Bill";
 import IActionServices, {IActionServiceServiceDefinition} from "../services/IActionServices";
 import ContainerProvider from "./ioc/ContainerProvider";
 import {LoaderResponse} from "../common/types/LoaderResponse";
-import ACTION_SERVICE_NAME = IActionServiceServiceDefinition.ACTION_SERVICE_NAME;
 import {Location, LocationBuilder} from "../model/entities/Location";
 import {Activity, ActivityBuilder} from "../model/entities/Activity";
+import {Participant, ParticipantBuilder} from "../model/entities/Participant";
+import {ValidatorResponse} from "../services/IValidator";
+import {ActivityParticipant, ActivityParticipantBuilder} from "../model/entities/ActivityParticipants";
+import {OnScreenTransaction} from "../view/screens/TransactionListScreen";
+import {isValidatorResponse} from "../utils/CheckUtils";
+import Transaction from "../services/calculator/Transaction";
+import ACTION_SERVICE_NAME = IActionServiceServiceDefinition.ACTION_SERVICE_NAME;
 
 
 async function fetchAllActivities(): Promise<LoaderResponse[]> {
@@ -17,12 +23,29 @@ async function fetchAllActivities(): Promise<LoaderResponse[]> {
     return result;
 }
 
-async function registerNewActivity(activityName: string, description: string | null): Promise<void> {
+async function registerNewActivity(activityName: string, description: string | null): Promise<string> {
     let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
     let activity: Activity = new ActivityBuilder()
         .activityName(activityName)
         .build();
-    await actionService.registerNewActivity(activity);
+    let registeredActivityId: string | ValidatorResponse = await actionService.registerNewActivity(activity);
+    if (typeof registeredActivityId == 'string') {
+        return registeredActivityId;
+    }
+    return '';
+}
+
+async function connectBillToActivity(billId: string, activityId: string): Promise<void | null> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let bill: Bill | null = await actionService.getBillData(billId);
+    if (bill != null) {
+        await updateBill(bill.billId, bill.billAmount, bill.description, activityId);
+    }
+}
+
+async function getActivityData(activityId: string): Promise<Activity | null> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    return await actionService.getActivityData(activityId);
 }
 
 async function registerNewBill(billName: string, billAmount: number, activityId: string | null, description: string | null, latitude: number | null, longitude: number | null): Promise<void> {
@@ -83,9 +106,113 @@ async function fetchAllBills(): Promise<LoaderResponse[]> {
     return result;
 }
 
+async function findUnAssignedBills(): Promise<LoaderResponse[]> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let result: LoaderResponse[] = [];
+    let bills: Bill[] = await actionService.findUnAssignedBills();
+    bills.forEach(bill => {
+        result.push({id: bill.billId, value: bill.billName})
+    });
+    return result;
+}
+
+async function getAllBillsOfActivity(activityId: string): Promise<LoaderResponse[]> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let result: LoaderResponse[] = [];
+    let bills: Bill[] = await actionService.getAllBillsOfActivity(activityId);
+    bills.forEach(bill => {
+        result.push({id: bill.billId, value: bill.billName})
+    });
+    return result;
+}
+
 async function fetchBill(billId: string): Promise<Bill | null> {
     let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
     return await actionService.getBillData(billId);
+}
+
+async function connectParticipantToActivity(participantId: string, activityId: string, spentAmount: number): Promise<void> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let activityParticipant: ActivityParticipant = new ActivityParticipantBuilder()
+        .participantId(participantId)
+        .spentAmount(spentAmount)
+        .activityId(activityId)
+        .build();
+    await actionService.connectParticipantToActivity(activityParticipant);
+}
+
+async function addParticipantToActivity(activityId: string, participantId: string | null, firstName: string, lastName: string, spentAmount: string): Promise<void> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let toOperateParticipantId: string | ValidatorResponse = '';
+    if (participantId != null) {
+        let participant: Participant | null = await actionService.getParticipant(participantId);
+        if (participant != null) {
+            toOperateParticipantId = participant.participantId;
+        }
+    } else {
+        let toRegisterParticipant: Participant = new ParticipantBuilder().participantName(firstName + ' ' + lastName).build();
+        toOperateParticipantId = await actionService.registerNewParticipant(toRegisterParticipant);
+    }
+    if (typeof toOperateParticipantId == "string") {
+        await connectParticipantToActivity(toOperateParticipantId, activityId, +spentAmount);
+    }
+}
+
+async function findNonRelatedActivityParticipants(activityId: string): Promise<LoaderResponse[]> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let participants: Participant[] = await actionService.findNonRelatedActivityParticipants(activityId);
+
+    //To remove duplicate participant
+    let uniqueParticipants = participants.filter((participant, index, self) =>
+        index === self.findIndex((p) => p.participantId === participant.participantId && p.participantName === participant.participantName)
+    );
+    return uniqueParticipants.map(participant => ({
+        id: participant.participantId,
+        value: participant.participantName
+    }));
+}
+
+async function findActivityParticipants(activityId: string): Promise<LoaderResponse[]> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let result: LoaderResponse[] = [];
+    let participants: Participant[] = await actionService.findActivityParticipants(activityId);
+    participants.forEach(participant => {
+        result.push({id: participant.participantId, value: participant.participantName})
+    });
+    return result;
+}
+
+async function getParticipant(participantId: string): Promise<LoaderResponse | null> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let result: LoaderResponse | null = null;
+    let participant: Participant | null = await actionService.getParticipant(participantId);
+    if (participant != null) {
+        result = {id: participant.participantId, value: participant.participantName};
+    }
+    return result;
+}
+
+async function calculate(activityId: string): Promise<OnScreenTransaction[] | ValidatorResponse> {
+    let actionService: IActionServices = ContainerProvider.provide().resolve(ACTION_SERVICE_NAME);
+    let transactions: Transaction[] | ValidatorResponse = await actionService.calculateTransactions(activityId);
+    if (isValidatorResponse(transactions)) {
+        return transactions;
+    } else {
+        let result: OnScreenTransaction[] = [];
+        for (let i = 0; i < transactions.length; i++) {
+            let payer: Participant | null = await actionService.getParticipant(transactions[i].getPayer().getParticipantId());
+            let taker: Participant | null = await actionService.getParticipant(transactions[i].getTaker().getParticipantId());
+            if (payer != null && taker != null) {
+                result.push({
+                    transactionId: transactions[i].getId(),
+                    transactionAmount: transactions[i].getTransactionAmount().toFixed(2),
+                    payer: payer.participantName,
+                    taker: taker.participantName
+                })
+            }
+        }
+        return result;
+    }
 }
 
 export {
@@ -95,4 +222,14 @@ export {
     , updateBill
     , fetchAllBills
     , fetchBill
+    , getAllBillsOfActivity
+    , addParticipantToActivity
+    , findActivityParticipants
+    , connectParticipantToActivity
+    , findNonRelatedActivityParticipants
+    , getActivityData
+    , connectBillToActivity
+    , findUnAssignedBills
+    , getParticipant
+    , calculate
 };

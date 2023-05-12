@@ -1,7 +1,7 @@
 import React, {ReactNode} from "react";
 import {FlatList, SafeAreaView, StyleSheet, View} from "react-native";
 import {colors} from "react-native-elements";
-type FlatListItemProps = {
+export type FlatListItemProps = {
     componentId: string;
     componentGenerator: () => ReactNode;
 }

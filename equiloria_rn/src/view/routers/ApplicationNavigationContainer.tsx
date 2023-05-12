@@ -9,6 +9,8 @@ import {NewActivity} from "../screens/NewActivity";
 import {ActivityDetails} from "../screens/ActivityDetails";
 import {Participants} from "../screens/Participants";
 import {AddParticipant} from "../screens/AddParticipant";
+import {BillSelector} from "../screens/BillSelector";
+import TransactionListScreen, {OnScreenTransaction} from "../screens/TransactionListScreen";
 
 type RootStackParamList = {
     Main: undefined;
@@ -16,9 +18,12 @@ type RootStackParamList = {
     Scanner: { billName: string }
     BillDetails: { billName?: string, billId?: string, totalAmount?: number };
     NewActivity: undefined;
-    ActivityDetails: { activityName?: string, activityId?: string };
-    Participants: undefined
-    AddParticipant: undefined
+    ActivityDetails: { activityId: string };
+    BillSelector: { activityId: string };
+    Participants: { activityId: string, participantExclusionList: string[] | null }
+    AddParticipant: { activityId: string, participantId: string | null }
+    TransactionListScreen: { transactions: OnScreenTransaction[] }
+
 };
 
 const stackNavigator = createStackNavigator<RootStackParamList>();
@@ -69,6 +74,13 @@ const ApplicationNavigationContainer: React.FC = () => {
                     }}
                 />
                 <stackNavigator.Screen
+                    name="BillSelector"
+                    component={BillSelector}
+                    options={{
+                        headerTitle: 'Select Bill(s)',
+                    }}
+                />
+                <stackNavigator.Screen
                     name="Participants"
                     component={Participants}
                     options={{
@@ -81,6 +93,13 @@ const ApplicationNavigationContainer: React.FC = () => {
                     options={{
                         headerTitle: 'Add participants',
                         presentation: 'card'
+                    }}
+                />
+                <stackNavigator.Screen
+                    name="TransactionListScreen"
+                    component={TransactionListScreen}
+                    options={{
+                        headerTitle: 'Transactions',
                     }}
                 />
             </stackNavigator.Navigator>

@@ -130,10 +130,9 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
     async function submit(): Promise<void> {
         await getLocationPermission();
         if (amount != null && amount !== '' && amount !== '0.00') {
-            console.warn(isUpdate, '................');
             let finalAmount: string = calculateTipAmount(amount);
             if (isUpdate) {
-                await updateBill(route.params.billId, +finalAmount, description, 'd592b7d9-1c73-4f08-a224-79abe9631d18');
+                await updateBill(route.params.billId, +finalAmount, description, activity);
             } else {
                 await register(finalAmount);
             }
@@ -152,12 +151,12 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
 
     function getAmountContainer() {
         return (
-            <View style={styles.amountContainer}>
+            <View style={styles.nameContainer}>
                 <Pressable>
-                    <Text style={styles.amountLabel}>{billName}</Text>
+                    <Text style={styles.nameLabel}>{billName}</Text>
                     <View style={styles.editableAmountLabel}>
-                        <Text style={styles.amountValue}>£</Text>
-                        <TextInput style={styles.amountValue}
+                        <Text style={styles.nameValue}>£</Text>
+                        <TextInput style={styles.nameValue}
                                    keyboardType='numeric'
                                    onChangeText={setAmount}
                                    value={amount}
@@ -256,7 +255,7 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
 };
 
 const styles = StyleSheet.create({
-    amountContainer: {
+    nameContainer: {
         flexDirection: 'column',
         justifyContent: 'space-between',
         backgroundColor: 'black',
@@ -266,12 +265,12 @@ const styles = StyleSheet.create({
         marginBottom: 24,
         alignItems: 'center'
     },
-    amountLabel: {
+    nameLabel: {
         color: 'white',
         fontSize: 14,
         fontFamily: 'Avenir',
     },
-    amountValue: {
+    nameValue: {
         textAlign: 'center',
         color: 'white',
         fontSize: 24,

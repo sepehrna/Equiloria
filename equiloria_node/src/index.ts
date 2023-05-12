@@ -1,5 +1,7 @@
 import {KafkaClient, Consumer, Producer, KeyedMessage} from 'kafka-node';
 import express = require('express');
+import * as fs from "fs";
+import * as Tesseract from "tesseract.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -99,5 +101,56 @@ app.post('/text-recognition', async (req, res) => {
     }
 
     console.log('Text detected from image: ', responseJson.responses[0].fullTextAnnotation.text);
+});
+
+app.use(express.json({limit: '50mb'}));
+
+app.post('/upload', async (req, res) => {
+
+    // Get the base64 string from the request body#
+    const base64Image = req.body.base64Image;
+    console.info('.................................................................');
+    // Remove the "data:image/png;base64," part of the string
+    const base64Data = base64Image.replace(/^data:image\/\w+;base64,/, '');
+
+    // Convert the base64 string back to binary data
+    const dataBuffer = Buffer.from(base64Data, 'base64');
+
+    // Write the data to a file
+    fs.writeFile('output.png', dataBuffer, (err) => {
+        if (err) {
+            console.error('Error:', err);
+            res.status(500).send('An error occurred: ' + err.message);
+        } else {
+            console.log('File uploaded successfully');
+
+            // Now that the image is saved, let's perform OCR on it
+            Tesseract.recognize('output.png', 'eng', { logger: m => console.log(m) })
+                .then(({ data: { text } }) => {
+                    // Once we have the text, let's try to find the total
+                    const lines = text.split('\n');
+                    let total;
+                    for (let line of lines) {
+                        console.log(line);
+                        if (line.toLowerCase().includes('total')) {
+                            total = line;
+                            break;
+                        }
+                    }
+
+                    console.log(total);
+                    if (total) {
+                        // Send the total back to the client
+                        res.send({ total: total });
+                    } else {
+                        res.send('No total found');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    res.status(500).send('An error occurred during OCR: ' + err.message);
+                });
+        }
+    });
 });
 

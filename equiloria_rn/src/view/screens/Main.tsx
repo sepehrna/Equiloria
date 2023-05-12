@@ -7,7 +7,7 @@ import {AppDispatch} from "../redux/store";
 import {useFocusEffect, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
-import {fetchAllActivities, fetchAllBills} from "../../controller/ActionServiceController";
+import {fetchAllActivities, fetchAllBills, findUnAssignedBills} from "../../controller/ActionServiceController";
 import {ScreenDesk} from "../components/ScreenDesk";
 import {Platform} from "react-native";
 import Constants from 'expo-constants';
@@ -16,7 +16,6 @@ const Main: React.FC = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'Main'>>();
     const billListId: string = 'billList';
     const activityListId: string = 'activityList';
-    useDispatch<AppDispatch>();
     const [bills, setBills] = useState<GroupedListItem[]>([]);
     const [activities, setActivities] = useState<GroupedListItem[]>([]);
 
@@ -24,9 +23,9 @@ const Main: React.FC = () => {
         React.useCallback(() => {
             const loadBills = async (): Promise<void> => {
                 let result: GroupedListItem[] = [];
-                const bills = await fetchAllBills();
+                const bills = await findUnAssignedBills();
                 bills.forEach(bill => result.push({id: bill.id, value: bill.value}));
-                return setBills(result);
+                setBills(result);
             };
             const loadActivities = async (): Promise<void> => {
                 let result: GroupedListItem[] = [];
@@ -53,7 +52,7 @@ const Main: React.FC = () => {
 
     function getWrappedAvatar() {
         return <AccountInfo text={'Equiloria User ;)'}
-                            subText={Platform.OS !== 'web' ? Constants.deviceName + ' user': 'Web User'}/>;
+                            subText={Platform.OS !== 'web' ? Constants.deviceName + ' user / Demo' : 'Web User / Demo'}/>;
     }
 
     function getBillList() {
@@ -66,11 +65,16 @@ const Main: React.FC = () => {
                             itemList={bills}/>;
     }
 
+    function navigateToActivityDetails(activityId: string) {
+        navigation.navigate('ActivityDetails', {activityId: activityId});
+    }
+
     function getActivityList() {
         return <GroupedList listId={activityListId}
                             listTitle={'Activities'}
                             extenderButtonName={'Add activity'}
                             indicatorColor='#FF4833'
+                            itemNavigator={navigateToActivityDetails}
                             itemList={activities}
                             extenderButtonFunction={navigateToNewActivity}/>;
     }
@@ -83,26 +87,5 @@ const Main: React.FC = () => {
         }/>
     );
 }
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         padding: 16
-//     },
-//     headerContainer: {
-//         alignItems: 'center',
-//         justifyContent: 'center',
-//         padding: 16,
-//         backgroundColor: colors.white,
-//         borderBottomWidth: StyleSheet.hairlineWidth,
-//         borderBottomColor: colors.grey3
-//     },
-//     headerText: {
-//         marginTop: 8,
-//     },
-//     headerSubText: {
-//         color: colors.grey0,
-//     },
-// });
 
 export default Main;

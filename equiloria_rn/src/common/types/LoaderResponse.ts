@@ -1,6 +1,7 @@
 type LoaderResponse = {
     id: string,
-    value: string
+    value: string,
+    amount?: number;
 }
 
 export {LoaderResponse}

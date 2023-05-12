@@ -59,14 +59,16 @@ class ActivityRepository extends BaseRepository<Activity> {
         await this.executeDdlCommand(dropCommandBuilder);
     }
 
-    public async persist(activity: Activity): Promise<void> {
+    public async persist(activity: Activity): Promise<string> {
+        let activityId: string = activity.activityId;
         let updated: Boolean = await this.update(activity);
         if (!updated) {
-            await this.insert(activity);
+            activityId = await this.insert(activity);
         }
+        return activityId;
     }
 
-    public async insert(activity: Activity): Promise<void> {
+    public async insert(activity: Activity): Promise<string> {
         const commandAggregator = new DmlCommandAggregator();
         let uuidValue = uuid.v4();
         const insertCommandBuilder = new InsertInto()
@@ -81,6 +83,10 @@ class ActivityRepository extends BaseRepository<Activity> {
             commandAggregator.command(this.billRepository.persistByParent(bill));
         }
         await this.executeDmlCommandsWithAggregator(commandAggregator);
+        if (typeof uuidValue == "string") {
+            return uuidValue;
+        }
+        return '';
     }
 
     public async update(activity: Activity): Promise<Boolean> {

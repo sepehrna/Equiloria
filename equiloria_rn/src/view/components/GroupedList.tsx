@@ -24,7 +24,9 @@ interface GroupedListProps {
     itemNavigator?: (itemId: string) => void;
     indicatorColor?: string;
     extenderButtonName: string;
-    extenderButtonFunction: () => void | undefined;
+    extenderButtonFunction?: () => void | undefined;
+    extenderButtonFunctionWithPassableObject?: (object: any) => void | undefined;
+    extenderPassableObject?: any | undefined;
 
 }
 
@@ -65,9 +67,18 @@ const GroupedList: React.FC<GroupedListProps> = (props: GroupedListProps) => {
 
     function generateAddButton() {
         return (
-            <Pressable onPress={props.extenderButtonFunction}>
+            <Pressable onPress={() => {
+                if (props.extenderPassableObject && props.extenderButtonFunctionWithPassableObject) {
+                    props.extenderButtonFunctionWithPassableObject(props.extenderPassableObject);
+                } else {
+                    if (props.extenderButtonFunction) {
+                        props.extenderButtonFunction();
+                    }
+                }
+            }}>
                 <ListItem key={'add'}
-                          containerStyle={[styles.bottomElementContainerStyle, styles.buttonContainerStyle]}>
+                          containerStyle={props.itemList.length === 0 ? [styles.singleElementContainerStyle, styles.bottomElementContainerStyle, styles.buttonContainerStyle]
+                              : [styles.bottomElementContainerStyle, styles.buttonContainerStyle]}>
                     <Icon style={styles.extenderIcon} name='plus' type='font-awesome' color={props.indicatorColor}/>
                     <ListItem.Content>
                         <ListItem.Title>{props.extenderButtonName}</ListItem.Title>
@@ -117,6 +128,10 @@ const styles = StyleSheet.create({
     bottomElementContainerStyle: {
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
+        borderWidth: hairlineWidth
+    },
+    singleElementContainerStyle: {
+        borderRadius: 20,
         borderWidth: hairlineWidth
     },
     extenderIcon: {

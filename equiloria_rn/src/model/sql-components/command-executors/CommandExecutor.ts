@@ -15,4 +15,6 @@ export default interface CommandExecutor {
 
     executeTransactionalCommand(commandBuilders: DmlBuilder[] | DdlBuilder[]): Promise<any>;
 
+    executeCustomQuery<E extends Entity>(customQuery: string, entityInstance: E): Promise<E[]>;
+
 }

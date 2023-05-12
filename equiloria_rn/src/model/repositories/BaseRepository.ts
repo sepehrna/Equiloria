@@ -27,4 +27,8 @@ export abstract class BaseRepository<T extends Entity> {
     protected async executeDqlCommand<E extends Entity>(commandBuilder: DqlBuilder<E>): Promise<E[]> {
         return await this.executor.executeNonTransactionalCommand(commandBuilder);
     }
+
+    protected async executeCustomDqlCommand<E extends Entity>(command: string, instance: E): Promise<E[]> {
+        return await this.executor.executeCustomQuery(command, instance);
+    }
 }

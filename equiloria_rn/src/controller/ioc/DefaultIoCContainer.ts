@@ -21,6 +21,9 @@ import {RepositoryInitiatorDefinition} from "../../services/IRepositoryInitiator
 import activityRepository from "../../model/repositories/ActivityRepository";
 import REPOSITORY_INITIATOR_NAME = RepositoryInitiatorDefinition.REPOSITORY_INITIATOR_NAME;
 import ActivityValidator from "../../services/ActivityValidator";
+import {ParticipantValidator} from "../../services/ParticipantValidator";
+import ParticipantRepository from "../../model/repositories/ParticipantRepository";
+import ActivityParticipantRepository from "../../model/repositories/ActivityParticipantRepository";
 
 export class DefaultIoCContainer implements IIoCContainer {
     private services: Map<string, any>;
@@ -44,10 +47,16 @@ export class DefaultIoCContainer implements IIoCContainer {
         this.register(BillValidator.billValidatorName, billValidator);
         let activityValidator = new ActivityValidator();
         this.register(ActivityValidator.activityValidatorName, activityValidator);
-        let actionServices = new ActionServices(this.resolve(ActivityRepository.activityRepositoryName)
+        let participantValidator = new ParticipantValidator();
+        this.register(ParticipantValidator.participantValidatorName, participantValidator);
+        let actionServices = new ActionServices(
+            this.resolve(ActivityRepository.activityRepositoryName)
             , activityValidator
+            , participantValidator
             , this.resolve(BillRepository.billRepositoryName)
-            , billValidator);
+            , billValidator
+            , this.resolve(ParticipantRepository.participantRepositoryName)
+            , this.resolve(ActivityParticipantRepository.activityParticipantRepositoryName));
         this.register(actionServicesInterfaceName
             , actionServices);
     }
@@ -79,6 +88,13 @@ export class DefaultIoCContainer implements IIoCContainer {
 
         let activityRepository: activityRepository = new ActivityRepository(sqliteInMemoryCommandExecutor, billRepository);
         this.register(ActivityRepository.activityRepositoryName, activityRepository);
+
+        let participantRepository: ParticipantRepository = new ParticipantRepository(sqliteInMemoryCommandExecutor);
+        this.register(ParticipantRepository.participantRepositoryName, participantRepository);
+
+        let activityParticipantRepository: ActivityParticipantRepository = new ActivityParticipantRepository(sqliteInMemoryCommandExecutor);
+        this.register(ActivityParticipantRepository.activityParticipantRepositoryName, activityParticipantRepository);
+
         console.info('****************************')
 
         let sqliteRepositoryInitiator = new SqliteRepositoryInitiator(
@@ -89,6 +105,8 @@ export class DefaultIoCContainer implements IIoCContainer {
             , eventRepository
             , locationRepository
             , userActionRepository
+            , participantRepository
+            , activityParticipantRepository
             , this.dbName
         );
         this.register(REPOSITORY_INITIATOR_NAME, sqliteRepositoryInitiator);

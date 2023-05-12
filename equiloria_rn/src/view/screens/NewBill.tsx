@@ -60,30 +60,9 @@ const NewBill: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    scanBillButton: {
-        backgroundColor: 'blue',
-    },
-    enterManuallyButton: {
-        backgroundColor: 'black',
-    },
     buttonContainer: {
         flexDirection: 'column',
         justifyContent: 'space-between',
-    },
-    button: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 12,
-        borderRadius: 4,
-        marginBottom: 8,
-        backgroundColor: 'blue'
-    },
-    buttonPressed: {
-        opacity: 0.5,
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 16,
-    },
+    }
 });
 export default NewBill;

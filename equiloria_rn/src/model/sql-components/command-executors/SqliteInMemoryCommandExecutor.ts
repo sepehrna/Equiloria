@@ -96,6 +96,35 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         });
     }
 
+    executeCustomQuery<E extends Entity>(customQuery: string, entityInstance: E): Promise<E[]> {
+        const db = this.open();
+        return new Promise((resolve, reject) => {
+            db.readTransaction(
+                (tx) => {
+                    console.info(customQuery);
+                    tx.executeSql(
+                        customQuery
+                        , []
+                        , (_, resultSet) => {
+                            let eConstructor: ClassConstructor<E> = entityInstance.constructor as ClassConstructor<E>;
+                            console.info('Result set: ', resultSet);
+                            let activities = this.resultSetToObjects(resultSet, eConstructor);
+                            resolve(activities);
+                        }
+                        , (_, error) => {
+                            console.info('Command error ', error);
+                            reject(error);
+                            return true;
+                        }
+                    );
+                }
+                , (error) => reject(error)
+            );
+        });
+    }
+
+
+
     private resultSetToObjects<T>(resultSet: SQLResultSet, objectType: new () => T): T[] {
         const rows = resultSet.rows;
         console.info('Fetched rows to convert: ', rows);
