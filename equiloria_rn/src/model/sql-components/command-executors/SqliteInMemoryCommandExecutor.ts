@@ -17,6 +17,7 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         this._dbName = dbName;
     }
 
+    // Method to open the database, if not already opened
     private open(): SQLite.WebSQLDatabase {
         if (this._database) {
             return this._database;
@@ -25,6 +26,7 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         return this._database;
     }
 
+    // Method to execute a command, based on its type
     public async execute(commandBuilder: CommandBuilder): Promise<any> {
         try {
             if (commandBuilder instanceof DmlBuilder) {
@@ -41,6 +43,7 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         }
     }
 
+    // Method to execute non-transactional commands (DQL)
     public async executeNonTransactionalCommand<E extends Entity>(commandBuilder: DqlBuilder<E>): Promise<E[]> {
         const db = this.open();
         return new Promise((resolve, reject) => {
@@ -69,6 +72,7 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         });
     }
 
+    // Method to execute transactional commands (DML or DDL)
     public async executeTransactionalCommand(commandBuilders: DmlBuilder[] | DdlBuilder[]): Promise<any> {
         const db = this.open();
         return new Promise((resolve, reject) => {
@@ -96,6 +100,7 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
         });
     }
 
+    // Method to execute a custom SQL query and transform the result set to entity objects
     executeCustomQuery<E extends Entity>(customQuery: string, entityInstance: E): Promise<E[]> {
         const db = this.open();
         return new Promise((resolve, reject) => {
@@ -124,7 +129,7 @@ export default class SqliteInMemoryCommandExecutor implements CommandExecutor {
     }
 
 
-
+    // Method to transform a SQLResultSet to an array of objects by using object transformer and a instance of the target object
     private resultSetToObjects<T>(resultSet: SQLResultSet, objectType: new () => T): T[] {
         const rows = resultSet.rows;
         console.info('Fetched rows to convert: ', rows);

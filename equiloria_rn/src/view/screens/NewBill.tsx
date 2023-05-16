@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'column',
         justifyContent: 'space-between',
+        paddingBottom: 100
     }
 });
 export default NewBill;

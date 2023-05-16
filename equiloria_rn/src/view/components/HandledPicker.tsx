@@ -14,7 +14,7 @@ interface HandledPickerItem {
 interface HandledPickerProps {
     pickerId: string;
     value?: string;
-    setValue?: React.Dispatch<React.SetStateAction<string>>;
+    updateParentState?: (value: string) => void;
     zeroItem: HandledPickerItem;
     initialItemId?: string;
     items: HandledPickerItem[];
@@ -23,7 +23,8 @@ interface HandledPickerProps {
 
 const HandledPicker: React.FC<HandledPickerProps> = (props: HandledPickerProps) => {
     let initialState: string = props.initialItemId ? props.initialItemId : '';
-    const [selectedValue, setSelectedValue] = useState<string>(initialState);
+    let isInit: boolean = true;
+    const [selected, setSelected] = useState<string>(initialState);
     const [isOpen, setOpen] = useState(false);
     const [flatListDataLength, setFlatListDataLength] = useState<number>(0);
     const dispatch = useDispatch<AppDispatch>();
@@ -41,17 +42,23 @@ const HandledPicker: React.FC<HandledPickerProps> = (props: HandledPickerProps) 
         handleLoadItems();
     }, []);
 
-
     function identifyPicker() {
+        let initialItem = props.items.find((item) => item.value === initialState);
         if (Platform.OS !== 'ios') {
             return (
                 <Picker
-                    selectedValue={selectedValue}
-                    onValueChange={value => setSelectedValue(value as string)}
+                    selectedValue={initialState && isInit ? initialState : selected}
+                    onValueChange={(itemValue) => {
+                        isInit = false;
+                        setSelected(itemValue);
+                        if (props.updateParentState) {
+                            props.updateParentState(itemValue);
+                        }
+                    }}
                     style={defaultStyles.picker}>
-                    <Picker.Item label={props.zeroItem.label} value={props.zeroItem.value}/>
-                    {props.items.map((value) => (
-                        <Picker.Item label={value.label} value={value.value}/>
+                    <Picker.Item key='-1' label={props.zeroItem.label} value={props.zeroItem.value}/>
+                    {props.items.map((value, index) => (
+                        <Picker.Item key={index.toString()} label={value.label} value={value.value}/>
                     ))}
                 </Picker>
             );
@@ -66,10 +73,16 @@ const HandledPicker: React.FC<HandledPickerProps> = (props: HandledPickerProps) 
                         setOpen={() => {
                             setOpen(!isOpen)
                         }}
-                        value={selectedValue}
-                        setValue={(value) => setSelectedValue(value)}
+                        value={selected}
+                        setValue={setSelected}
+                        onChangeValue={(value) => {
+                            if (props.updateParentState && value) {
+                                props.updateParentState(value)
+                            }
+                        }}
                         autoScroll
-                        placeholder={props.zeroItem.label}/>
+                        placeholder={initialItem ? initialItem?.label : props.zeroItem.label}
+                    />
                     <FlatList
                         data={flatListData()}
                         renderItem={() =>

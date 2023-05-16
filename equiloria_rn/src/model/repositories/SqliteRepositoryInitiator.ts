@@ -40,7 +40,7 @@ class SqliteRepositoryInitiator implements IRepositoryInitiator {
 
     private async checkDatabaseExists(): Promise<boolean> {
         try {
-            const dbPath = `${FileSystem.documentDirectory}SQLite/${this.databaseName}.db`;
+            const dbPath = `${FileSystem.documentDirectory}SQLite/${this.databaseName}`;
             const dbInfo = await FileSystem.getInfoAsync(dbPath);
             return dbInfo.exists;
         } catch (error) {
@@ -50,12 +50,13 @@ class SqliteRepositoryInitiator implements IRepositoryInitiator {
     }
 
     async initializeDatabase(): Promise<Boolean> {
-        // if (!await this.checkDatabaseExists()) {
-        // this.initDbObjects();
-        // this.wipeDatabase();
-        return true;
-        // }
-        // return false;
+        let isDbExists = await this.checkDatabaseExists();
+        console.info(isDbExists);
+        if (!isDbExists) {
+            await this.initDbObjects();
+            return true;
+        }
+        return false;
     }
 
     async initDbObjects() {

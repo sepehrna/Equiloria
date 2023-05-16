@@ -1,12 +1,13 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Image, StyleSheet, Text, TextInput, View} from 'react-native';
-import {AutoFocus, Camera} from 'expo-camera';
+import {Image, Platform, StyleSheet, Text, TextInput, View} from 'react-native';
+import {Camera} from 'expo-camera';
 import {RouteProp, useFocusEffect, useNavigation} from "@react-navigation/native";
 import {RootStackParamList} from "../routers/ApplicationNavigationContainer";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import ActionButton from "../components/ActionButton";
 import {CameraCapturedPicture, CameraPictureOptions, PermissionResponse} from "expo-camera/src/Camera.types";
 import {uploadToExtractText} from "../../controller/ExternalServicesApi";
+import {KeyboardAvoidingView} from 'react-native';
 
 
 type ScannerRouteProp = RouteProp<RootStackParamList, 'Scanner'>;
@@ -54,26 +55,19 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
 
     const recognizeText = async (image: string | undefined) => {
         if (image != null) {
-            let recognizedTexts: string[] = [];
             try {
-                // recognizedTexts = await TextRecognition.recognize(image, {
-                //     visionIgnoreThreshold: 0.5,
-                // });
-                console.info('................................');
-                await uploadToExtractText(image);
+                let amount: string = await uploadToExtractText(image);
+                setTotalAmount(amount);
             } catch (e) {
                 console.error(e);
             }
-            // recognizedTexts.forEach(recognizedText => recognizedText.replace(/[^\d.-]/g, ''))
-            // const amount = recognizedTexts.replace(/[^\d.-]/g, '');
-            // setTotalAmount(amount);
         }
     };
 
     const captureImage = async () => {
         if (cameraRef != null && cameraRef.current != null) {
             try {
-                const options : CameraPictureOptions = {quality: 1, base64: true, exif: false};
+                const options: CameraPictureOptions = {quality: 1, base64: true, exif: false};
                 const takenPicture: CameraCapturedPicture = await cameraRef.current.takePictureAsync(options);
                 await recognizeText(takenPicture.base64);
                 setPhoto(takenPicture.uri);
@@ -110,7 +104,7 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
             </View>
             : hasPermission
                 ?
-                <Camera style={defaultStyles.camera} ref={cameraRef} autoFocus={1}>
+                <Camera style={defaultStyles.camera} ref={cameraRef} autoFocus={Camera.Constants.AutoFocus}>
                     <View style={defaultStyles.overlay}/>
                 </Camera>
                 :
@@ -122,20 +116,25 @@ const Scanner: React.FC<ScannerScreenProps> = ({route}) => {
     }
 
     return (
-        <View style={defaultStyles.container}>
-            {getCamera()}
-            <TextInput
-                style={defaultStyles.amountInput}
-                value={totalAmount}
-                keyboardType='numeric'
-                placeholder='Total Amount'
-                onChangeText={setTotalAmount}
-            />
-            <View style={defaultStyles.buttonContainer}>
-                <ActionButton text={'Take'} backgroundColor={'green'} onPress={captureImage}/>
-                <ActionButton text={'Done'} onPress={navigateToDetail}/>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{flex: 1}}>
+            <View style={defaultStyles.container}>
+                {getCamera()}
+                <TextInput
+                    style={defaultStyles.amountInput}
+                    value={totalAmount}
+                    keyboardType='numeric'
+                    placeholder='Total Amount'
+                    onChangeText={setTotalAmount}
+                />
+
+                <View style={defaultStyles.buttonContainer}>
+                    <ActionButton text={'Take'} backgroundColor={'green'} onPress={captureImage}/>
+                    <ActionButton text={'Done'} onPress={navigateToDetail}/>
+                </View>
             </View>
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 

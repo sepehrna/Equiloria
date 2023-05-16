@@ -81,6 +81,7 @@ async function updateBill(billId: string, billAmount: number, description: strin
         .billAmount(billAmount)
         .description(description)
         .build();
+    await actionService.updateBill(toUpdateBill);
     if (activityId != null && activityId !== '') {
         let foundActivity: Activity | null = await actionService.getActivityData(activityId);
         if (foundActivity) {

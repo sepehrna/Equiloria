@@ -50,13 +50,16 @@ const sendToGoogle = async (uri: string): Promise<void> => {
     console.log('Text detected from image: ', responseJson.responses[0].fullTextAnnotation.text);
 };
 
-async function uploadToExtractText(base64Image: string): Promise<void> {
+async function uploadToExtractText(base64Image: string): Promise<string> {
     let response = await fetch('http://10.72.194.161:3000/upload', {
         method: 'POST',
         body: JSON.stringify({base64Image: base64Image}),
         headers: {'Content-Type': 'application/json'},
     });
-    console.info(response.json());
+    let data = await response.json();
+    let totalAmount = data.total;
+    console.info(totalAmount);
+    return totalAmount.toFixed(2);
 }
 
 export {sendToGoogle, uploadToExtractText};

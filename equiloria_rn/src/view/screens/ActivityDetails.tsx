@@ -199,7 +199,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         color: 'white',
         fontSize: 14,
-        fontFamily: 'Avenir',
     },
     nameValue: {
         textAlign: 'center',

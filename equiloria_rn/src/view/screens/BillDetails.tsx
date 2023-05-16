@@ -83,7 +83,7 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
     const getLocationPermission = async () => {
         if (locationAccessStatus == null) {
             let locationAccessPermission: Boolean = await getLocationAccessPermission();
-            setLocationAccessStatus(locationAccessPermission)
+            setLocationAccessStatus(locationAccessPermission);
         }
     }
     const handleTipPercentage = (percentage: number) => {
@@ -173,10 +173,10 @@ const BillDetails: React.FC<BillDetailScreenProps> = ({route}) => {
                 <Text style={styles.label}>Activity</Text>
                 <HandledPicker pickerId={'activity'}
                                value={activity}
-                               setValue={setActivity}
+                               updateParentState={setActivity}
                                zeroItem={{value: '', label: 'Choose activity'}}
                                items={activityList}
-                               initialItemId={'1'}/>
+                               initialItemId={activity}/>
             </>
         );
     }
@@ -268,7 +268,6 @@ const styles = StyleSheet.create({
     nameLabel: {
         color: 'white',
         fontSize: 14,
-        fontFamily: 'Avenir',
     },
     nameValue: {
         textAlign: 'center',
