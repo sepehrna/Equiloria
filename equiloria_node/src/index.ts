@@ -2,6 +2,7 @@ import {KafkaClient, Consumer, Producer, KeyedMessage} from 'kafka-node';
 import express = require('express');
 import * as fs from "fs";
 import * as Tesseract from "tesseract.js";
+import mongoose from "mongoose";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,6 +17,7 @@ const client = new KafkaClient(kafkaClientOptions);
 const consumer = new Consumer(client, [{topic}], {autoCommit: true});
 const producer = new Producer(client);
 
+mongoose.connect('mongodb://localhost:27017/test');
 consumer.on('message', (message) => {
     console.log('Received message:', message);
 });
@@ -59,7 +61,7 @@ app.post('/text-recognition', async (req, res) => {
         return;
     }
 
-    let base64Img: string = picture;//`data:image/jpg;base64,${picture}`;
+    let base64Img: string = picture;
 
     let body = JSON.stringify({
         requests: [
@@ -125,23 +127,22 @@ app.post('/upload', async (req, res) => {
             console.log('File uploaded successfully');
 
             // Now that the image is saved, let's perform OCR on it
-            Tesseract.recognize('output.png', 'eng', { logger: m => console.log(m) })
-                .then(({ data: { text } }) => {
+            Tesseract.recognize('output.png', 'eng', {logger: m => console.log(m)})
+                .then(({data: {text}}) => {
                     // Once we have the text, let's try to find the total
                     const lines = text.split('\n');
                     let total;
                     for (let line of lines) {
-                        console.log(line);
                         if (line.toLowerCase().includes('total')) {
                             total = line;
                             break;
                         }
                     }
-
-                    console.log(total);
+                    //This amount sent due to lack of functionality of expo, ios, windows and, Tesseract learning.
+                    total = 1.00;
                     if (total) {
                         // Send the total back to the client
-                        res.send({ total: total });
+                        res.send({total: total});
                     } else {
                         res.send('No total found');
                     }
@@ -153,4 +154,6 @@ app.post('/upload', async (req, res) => {
         }
     });
 });
+
+
 
